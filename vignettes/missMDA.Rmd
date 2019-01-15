@@ -1,0 +1,38 @@
+---
+output:
+  pdf_document: default
+  html_document: default
+---
+<!--
+%\VignetteEngine{knitr::knitr}
+%\VignetteIndexEntry{missMDA}
+-->
+
+---
+title: "missMDA"
+author: "Fran\ccois Husson"
+output:
+  pdf_document:
+    fig_height: 6
+    keep_tex: yes
+  html_document: default
+  word_document: default
+---
+
+
+# The missMDA package
+
+The missMDA package is a package dedicated to:
+
+- impute missing values in continuous data sets using the PCA model, categorical data sets using MCA, mixed data using FAMD
+
+- generate multiple imputed data sets for continuous data using the PCA model, for categorical data using MCA
+
+- visualize multiple imputation in PCA and MCA
+
+You can see more information about the package with the paper published in 
+the Journal of Statistical Software: 
+
+Josse, J., & Husson, F. (2016). missMDA: a package for handling missing values in multivariate data analysis. Journal of Statistical Software, 70(1), 1-31.
+
+https://www.jstatsoft.org/article/view/v070i01

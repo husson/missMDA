@@ -1,0 +1,22 @@
+bibentry(bibtype = "Article",
+  title        = "{missMDA}: A Package for Handling Missing Values in Multivariate Data Analysis",
+  author       = c(person(given = "Julie",
+                          family = "Josse",
+                          email = "josse@agrocampus-ouest.fr"),
+                   person(given = "Fran\\c{c}ois",
+                          family = "Husson")),
+  journal      = "Journal of Statistical Software",
+  year         = "2016",
+  volume       = "70",
+  number       = "1",
+  pages        = "1--31",
+  doi          = "10.18637/jss.v070.i01",
+
+  header       = "To cite missMDA in publications use:",
+  textVersion  =
+  paste("Julie Josse, Francois Husson (2016).",
+        "missMDA: A Package for Handling Missing Values in Multivariate Data Analysis.",
+        "Journal of Statistical Software, 70(1), 1-31.",
+        "doi:10.18637/jss.v070.i01")
+)
+

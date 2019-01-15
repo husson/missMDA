@@ -1,0 +1,27 @@
+---
+output:
+  pdf_document: default
+  html_document: default
+---
+<!--
+%\VignetteEngine{knitr::knitr}
+%\VignetteIndexEntry{MulitpleImputation}
+-->
+
+---
+title: "Mulitple Imputation User Guide"
+author: "Vincent Audigier"
+output:
+  pdf_document:
+    fig_height: 6
+    keep_tex: yes
+  html_document: default
+  word_document: default
+---
+
+
+# Introduction
+
+This preprint shows how to perform multiple imputation with principal component methods: a user guide.
+
+http://factominer.free.fr/missMDA/appendix_These_Audigier.pdf
