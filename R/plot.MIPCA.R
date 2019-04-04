@@ -98,7 +98,8 @@ if ((choice=="all")|(choice=="ind.proc")){
   if (new.plot) dev.new()
   oo=FactoMineR::PCA(res.procrustes,ind.sup=c((nrow(res$call$X)+1):nrow(res.procrustes)),scale.unit=FALSE,graph=FALSE)
   oo$eig=reference$eig
-el=coord.ellipse(cbind.data.frame(as.factor(rep(rownames(res$call$X),res$call$nboot)),oo$ind.sup$coord[,axes]),level.conf=level.conf) 
+  if (is.null(rownames(res$call$X))) rownames(res$call$X) <- 1:nrow(res$call$X)
+  el=coord.ellipse(cbind.data.frame(as.factor(rep(rownames(res$call$X),res$call$nboot)),oo$ind.sup$coord[,axes]),level.conf=level.conf) 
   if (is.null(main)) title="Multiple imputation using Procrustes" 
   plot(oo,axes=axes,col.ind.sup=rep(1:nrow(res$call$X),res$call$nboot),label="ind",ellipse=el,col.quali="black", title=title,invisible="ind.sup",new.plot=FALSE)
 
