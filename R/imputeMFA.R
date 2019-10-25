@@ -1,9 +1,9 @@
 imputeMFA<-function (X, group, ncp = 2, type = rep("s", length(group)), 
           method = c("Regularized", "EM"), row.w = NULL, coeff.ridge = 1, 
-          threshold = 1e-06, seed = NULL, maxiter = 1000, ...) 
+          threshold = 1e-06, ind.sup = NULL, num.group.sup = NULL, seed = NULL, maxiter = 1000, ...) 
 {
   impute <- function(X, group, ncp = 2, type = rep("s", length(group)), 
-                     method = NULL, threshold = 1e-06, seed = NULL, maxiter = 1000, 
+                     method = NULL, threshold = 1e-06, ind.sup = NULL, num.group.sup = NULL, seed = NULL, maxiter = 1000, 
                      row.w = NULL, coeff.ridge = 1, ...) {
     moy.p <- function(V, poids) {
       res <- sum(V * poids, na.rm = TRUE)/sum(poids[!is.na(V)])
@@ -74,8 +74,6 @@ imputeMFA<-function (X, group, ncp = 2, type = rep("s", length(group)),
         }
       }
     }
-    if (is.null(row.w)) 
-      row.w = rep(1/nrow(X), nrow(X))
     group.mod = group
     Xhat <- matrix(0, nrow(X), 0)
     Xhat2 <- matrix(0, nrow(X), 0)
@@ -103,7 +101,7 @@ imputeMFA<-function (X, group, ncp = 2, type = rep("s", length(group)),
       
       #quali
       result$completeObs <- X
-      result$completeObs[,ind.quali] <- find.category(X[,ind.quali,drop=F], tab.disjonctif.prop(X[,ind.quali,drop=F]))
+      result$completeObs[,ind.quali] <- find.category(X[,ind.quali,drop=F], tab.disjonctif.prop(X[,ind.quali,drop=F],row.w=row.w))
       #quanti
       tab.disj <- X[,ind.quanti,drop=F]
       Moy<-matrix(colMeans(tab.disj,na.rm=T),nrow=nrow(tab.disj),ncol=ncol(tab.disj),byrow=T)
@@ -117,7 +115,7 @@ imputeMFA<-function (X, group, ncp = 2, type = rep("s", length(group)),
       nbdummy[is.quali] <- unlist(lapply(X[, is.quali, drop = FALSE], nlevels))
       tabdisj <- matrix(NA,nrow(X),ncol=sum(nbdummy))
       tabdisj[,cumsum(nbdummy)[which(nbdummy==1)]]<- as.matrix(result$completeObs[,ind.quanti,drop=F])
-      tabdisj[,-cumsum(nbdummy)[which(nbdummy==1)]]<- tab.disjonctif.prop(X[,ind.quali,drop=F])
+      tabdisj[,-cumsum(nbdummy)[which(nbdummy==1)]]<- tab.disjonctif.prop(X[,ind.quali,drop=F],row.w=row.w)
       result$tab.disj <- tabdisj
       
       # ind.var, group.mod
@@ -129,47 +127,37 @@ imputeMFA<-function (X, group, ncp = 2, type = rep("s", length(group)),
                            drop = FALSE]
         
         if (type[g] == "n") {
-          tab.disj = tab.disjonctif.prop(aux.base, seed, 
-                                         row.w = row.w)
+          tab.disj = tab.disjonctif.prop(aux.base, seed, row.w = row.w)
           tab.disj.comp[[g]] = tab.disj
           group.mod[g] <- ncol(tab.disj)
         }
       }
       ind.var <- vector(mode = "list", length = length(group))
       ind.var[[1]] <- 1:group.mod[1]
-      for (g in 2:length(group)) ind.var[[g]] <- (cumsum(group.mod)[g - 
-                                                                      1] + 1):cumsum(group.mod)[g]
+      for (g in 2:length(group)) ind.var[[g]] <- (cumsum(group.mod)[g - 1] + 1):cumsum(group.mod)[g]
       
       result$call$group.mod <- group.mod
       ind.var <- vector(mode = "list", length = length(group))
       ind.var[[1]] <- 1:result$call$group.mod[1]
-      for (g in 2:length(group)) ind.var[[g]] <- (cumsum(result$call$group.mod)[g - 
-                                                                                  1] + 1):cumsum(result$call$group.mod)[g]
+      for (g in 2:length(group)) ind.var[[g]] <- (cumsum(result$call$group.mod)[g - 1] + 1):cumsum(result$call$group.mod)[g]
       result$call$ind.var = ind.var
       return(result)
     }
   
     for (g in 1:length(group)) {
-      if (g == 1) 
-        aux.base <- X[, 1:group[1], drop = FALSE]
-      else aux.base <- X[, (cumsum(group)[g - 1] + 1):cumsum(group)[g], 
-                         drop = FALSE]
+      if (g == 1) aux.base <- X[, 1:group[1], drop = FALSE]
+      else aux.base <- X[, (cumsum(group)[g - 1] + 1):cumsum(group)[g],  drop = FALSE]
       if (type[g] == "s") {
         Xhat2 <- cbind.data.frame(Xhat2, aux.base)
-        MM[[g]] <- apply(as.data.frame(aux.base), 2, 
-                         moy.p, row.w)
+        MM[[g]] <- apply(as.data.frame(aux.base), 2, moy.p, row.w)
         aux.base <- t(t(as.matrix(aux.base)) - MM[[g]])
-        ET[[g]] <- apply(as.data.frame(aux.base), 2, 
-                         ec, row.w)
+        ET[[g]] <- apply(as.data.frame(aux.base), 2, ec, row.w)
         aux.base <- t(t(as.matrix(aux.base))/ET[[g]])
         missing <- which(is.na(as.matrix(aux.base)))
-        if (any(is.na(aux.base))) 
-          aux.base[missing] <- 0
-        ponderation[g] <- FactoMineR::svd.triplet(aux.base, ncp = 1, 
-                                      row.w = row.w)$vs[1]
+        if (any(is.na(aux.base))) aux.base[missing] <- 0
+        ponderation[g] <- FactoMineR::svd.triplet(aux.base, ncp = 1, row.w = row.w)$vs[1]
         Xhat <- cbind.data.frame(Xhat, aux.base/ponderation[g])
-        if (!is.null(seed) & (length(missing) != 0)) 
-          Xhat[missing, ] <- rnorm(length(missing))
+        if (!is.null(seed) & (length(missing) != 0))  Xhat[missing, ] <- rnorm(length(missing))
       }
       if (type[g] == "c") {
         Xhat2 <- cbind.data.frame(Xhat2, aux.base)
@@ -177,17 +165,13 @@ imputeMFA<-function (X, group, ncp = 2, type = rep("s", length(group)),
                          moy.p, row.w)
         aux.base <- t(t(as.matrix(aux.base)) - MM[[g]])
         missing <- which(is.na(as.matrix(aux.base)))
-        if (any(is.na(aux.base))) 
-          aux.base[missing] <- 0
-        ponderation[g] = FactoMineR::svd.triplet(aux.base, ncp = 1, 
-                                     row.w = row.w)$vs[1]
+        if (any(is.na(aux.base))) aux.base[missing] <- 0
+        ponderation[g] = FactoMineR::svd.triplet(aux.base, ncp = 1, row.w = row.w)$vs[1]
         Xhat <- cbind.data.frame(Xhat, aux.base/ponderation[g])
-        if (!is.null(seed) & (length(missing) != 0)) 
-          Xhat[missing, ] <- rnorm(length(missing))
+        if (!is.null(seed) & (length(missing) != 0)) Xhat[missing, ] <- rnorm(length(missing))
       }
       if (type[g] == "n") {
-        tab.disj = tab.disjonctif.prop(aux.base, seed, 
-                                       row.w = row.w)
+        tab.disj = tab.disjonctif.prop(aux.base, seed, row.w = row.w)
         tab.disj.comp[[g]] = tab.disj
         group.mod[g] <- ncol(tab.disj)
         MM[[g]] = apply(tab.disj, 2, moy.p, row.w)/ncol(aux.base)
@@ -201,22 +185,17 @@ imputeMFA<-function (X, group, ncp = 2, type = rep("s", length(group)),
     }
     ind.var <- vector(mode = "list", length = length(group))
     ind.var[[1]] <- 1:group.mod[1]
-    for (g in 2:length(group)) ind.var[[g]] <- (cumsum(group.mod)[g - 
-                                                                    1] + 1):cumsum(group.mod)[g]
+    for (g in 2:length(group)) ind.var[[g]] <- (cumsum(group.mod)[g - 1] + 1):cumsum(group.mod)[g]
     fittedX <- Xhat <- as.matrix(Xhat)
-    if (ncp >= min(nrow(Xhat) - 2, ncol(Xhat) - 1)) 
-      stop("ncp is too large")
+    if (ncp >= min(nrow(Xhat) - 2, ncol(Xhat) - 1)) stop("ncp is too large")
     ncp <- min(ncp, ncol(X) - 1, nrow(X) - 2)
     missing <- which(is.na(as.matrix(Xhat2)))
     nb.iter <- 1
     old <- Inf
     while (nb.iter > 0) {
-      Xhat[missing] <- fittedX[missing]
       for (g in 1:length(group)) {
-        if (g == 1) 
-          aux.base <- Xhat[, 1:group.mod[1], drop = FALSE]
-        else aux.base <- Xhat[, (cumsum(group.mod)[g - 
-                                                     1] + 1):cumsum(group.mod)[g], drop = FALSE]
+        if (g == 1) aux.base <- Xhat[, 1:group.mod[1], drop = FALSE]
+        else aux.base <- Xhat[, (cumsum(group.mod)[g - 1] + 1):cumsum(group.mod)[g], drop = FALSE]
         aux.base <- aux.base * ponderation[g]
         if (type[g] == "s") {
           aux.base <- t((t(aux.base) * ET[[g]]) + MM[[g]])
@@ -224,50 +203,45 @@ imputeMFA<-function (X, group, ncp = 2, type = rep("s", length(group)),
           aux.base <- t(t(aux.base) - MM[[g]])
           ET[[g]] <- apply(aux.base, 2, ec, row.w)
           aux.base <- t(t(aux.base)/ET[[g]])
-          ponderation[g] = FactoMineR::svd.triplet(aux.base, ncp = 1, 
-                                       row.w = row.w)$vs[1]
+          ponderation[g] = FactoMineR::svd.triplet(aux.base, ncp = 1, row.w = row.w)$vs[1]
         }
         if (type[g] == "c") {
           aux.base <- t(t(aux.base) + MM[[g]])
           MM[[g]] <- apply(aux.base, 2, moy.p, row.w)
           aux.base <- t(t(aux.base) - MM[[g]])
-          ponderation[g] = FactoMineR::svd.triplet(aux.base, ncp = 1, 
-                                       row.w = row.w)$vs[1]
+          ponderation[g] = FactoMineR::svd.triplet(aux.base, ncp = 1, row.w = row.w)$vs[1]
         }
         if (type[g] == "n") {
-          tab.disj = t(t(aux.base)/sqrt(MM[[g]])) + matrix(1, 
-                                                           nrow(aux.base), ncol(aux.base))
-          tab.disj = t(t(tab.disj) * apply(tab.disj.comp[[g]], 
-                                           2, moy.p, row.w))
+          tab.disj = t(t(aux.base)/sqrt(MM[[g]])) + matrix(1, nrow(aux.base), ncol(aux.base))
+          tab.disj = t(t(tab.disj) * apply(tab.disj.comp[[g]], 2, moy.p, row.w))
           tab.disj.comp[[g]] = tab.disj
           MM[[g]] = apply(tab.disj, 2, moy.p, row.w)/ncol(aux.base)
           if (any(MM[[g]] < 0)) 
             stop(paste("The algorithm fails to converge. Choose a number of components (ncp) less or equal than ", 
                        ncp - 1, " or a number of iterations (maxiter) less or equal than ", 
                        maxiter - 1, sep = ""))
-          Z = t(t(tab.disj)/apply(tab.disj, 2, moy.p, 
-                                  row.w))
+          Z = t(t(tab.disj)/apply(tab.disj, 2, moy.p, row.w))
           Z = t(t(Z) - apply(Z, 2, moy.p, row.w))
           aux.base = t(t(Z) * sqrt(MM[[g]]))
-          ponderation[g] <- FactoMineR::svd.triplet(aux.base, row.w = row.w, 
-                                        ncp = 1)$vs[1]
+          ponderation[g] <- FactoMineR::svd.triplet(aux.base, row.w = row.w, ncp = 1)$vs[1]
         }
-        if (g == 1) 
-          Xhat[, 1:group.mod[1]] <- aux.base/ponderation[g]
-        else Xhat[, (cumsum(group.mod)[g - 1] + 1):cumsum(group.mod)[g]] <- aux.base/ponderation[g]
+        if (g == 1) Xhat[, 1:group.mod[1]] <- aux.base/ponderation[g]
+		else Xhat[, (cumsum(group.mod)[g - 1] + 1):cumsum(group.mod)[g]] <- aux.base/ponderation[g]
       }
+	  if (!is.null(num.group.sup)){
+	    for (g in num.group.sup){
+		  if (g == 1) Xhat[,1:group.mod[1]] <- Xhat[,1:group.mod[1]] * 1e-08
+		  else Xhat[,(cumsum(group.mod)[g - 1] + 1):cumsum(group.mod)[g]] <- Xhat[,(cumsum(group.mod)[g - 1] + 1):cumsum(group.mod)[g]] * 1e-08
+		}
+	  }
       svd.res <- FactoMineR::svd.triplet(Xhat, row.w = row.w, ncp = ncp)
-      sigma2 <- mean(svd.res$vs[-(1:ncp)]^2)
-      sigma2 <- min(sigma2 * coeff.ridge, svd.res$vs[ncp + 
-                                                       1]^2)
-      if (method == "em") 
-        sigma2 <- 0
+      if (length(num.group.sup)>0) sigma2 <- mean(svd.res$vs[-c(1:ncp,(ncol(Xhat)-sum(group.mod[num.group.sup])+1):ncol(Xhat))]^2)
+	  else sigma2 <- mean(svd.res$vs[-c(1:ncp)]^2)
+      sigma2 <- min(sigma2 * coeff.ridge, svd.res$vs[ncp + 1]^2)
+      if (method == "em") sigma2 <- 0
       lambda.shrinked = (svd.res$vs[1:ncp]^2 - sigma2)/svd.res$vs[1:ncp]
-      if (ncp == 1) 
-        fittedX = tcrossprod((svd.res$U[, 1, drop = FALSE] * 
-                                row.w) * lambda.shrinked, svd.res$V[, 1, drop = FALSE])
-      else fittedX = tcrossprod(t(t(svd.res$U[, 1:ncp] * 
-                                      row.w) * lambda.shrinked), svd.res$V[, 1:ncp])
+      if (ncp == 1) fittedX = tcrossprod((svd.res$U[, 1, drop = FALSE] * row.w) * lambda.shrinked, svd.res$V[, 1, drop = FALSE])
+      else fittedX = tcrossprod(t(t(svd.res$U[, 1:ncp] * row.w) * lambda.shrinked), svd.res$V[, 1:ncp])
       fittedX <- fittedX/row.w
       diff <- Xhat - fittedX
       diff[missing] <- 0
@@ -275,37 +249,37 @@ imputeMFA<-function (X, group, ncp = 2, type = rep("s", length(group)),
       criterion <- abs(1 - objective/old)
       old <- objective
       nb.iter <- nb.iter + 1
+      Xhat[missing] <- fittedX[missing]
+	  if (!is.null(num.group.sup)){
+	    for (g in num.group.sup){
+		  if (g == 1) Xhat[,1:group.mod[1]] <- Xhat[,1:group.mod[1]] * 1e+08
+		  else Xhat[,(cumsum(group.mod)[g - 1] + 1):cumsum(group.mod)[g]] <- Xhat[,(cumsum(group.mod)[g - 1] + 1):cumsum(group.mod)[g]] * 1e+08
+		}
+	  }
       if (!is.nan(criterion)) {
-        if ((criterion < threshold) && (nb.iter > 5)) 
-          nb.iter <- 0
-        if ((objective < threshold) && (nb.iter > 5)) 
-          nb.iter <- 0
+        if ((criterion < threshold) && (nb.iter > 5))  nb.iter <- 0
+        if ((objective < threshold) && (nb.iter > 5))  nb.iter <- 0
       }
       if (nb.iter > maxiter) {
         nb.iter <- 0
         warning(paste("Stopped after ", maxiter, " iterations"))
       }
     }
+    # Xhat[missing] <- fittedX[missing]  ## A ajouter ?
     for (g in 1:length(group)) {
-      if (g == 1) 
-        aux.base <- Xhat[, 1:group.mod[1], drop = FALSE]
-      else aux.base <- Xhat[, (cumsum(group.mod)[g - 1] + 
-                                 1):cumsum(group.mod)[g], drop = FALSE]
+      if (g == 1) aux.base <- Xhat[, 1:group.mod[1], drop = FALSE]
+      else aux.base <- Xhat[, (cumsum(group.mod)[g - 1] + 1):cumsum(group.mod)[g], drop = FALSE]
       aux.base <- aux.base * ponderation[g]
       if (type[g] == "s") {
         aux.base <- t(t(aux.base) * ET[[g]])
         aux.base <- t(t(aux.base) + MM[[g]])
       }
-      if (type[g] == "c") 
-        aux.base <- sweep(aux.base, 2, MM[[g]], FUN = "+")
+      if (type[g] == "c") aux.base <- sweep(aux.base, 2, MM[[g]], FUN = "+")
       if (type[g] == "n") {
-        tab.disj = t(t(aux.base)/sqrt(MM[[g]])) + matrix(1, 
-                                                         nrow(aux.base), ncol(aux.base))
-        aux.base = t(t(tab.disj) * apply(tab.disj.comp[[g]], 
-                                         2, moy.p, row.w))
+        tab.disj = t(t(aux.base)/sqrt(MM[[g]])) + matrix(1, nrow(aux.base), ncol(aux.base))
+        aux.base = t(t(tab.disj) * apply(tab.disj.comp[[g]], 2, moy.p, row.w))
       }
-      if (g == 1) 
-        Xhat[, 1:group.mod[1]] <- aux.base
+      if (g == 1) Xhat[, 1:group.mod[1]] <- aux.base
       else Xhat[, (cumsum(group.mod)[g - 1] + 1):cumsum(group.mod)[g]] <- aux.base
     }
     completeObs <- as.matrix(Xhat2)
@@ -319,13 +293,13 @@ imputeMFA<-function (X, group, ncp = 2, type = rep("s", length(group)),
   }
   obj = Inf
   method <- tolower(method)
-  if (is.null(row.w)) 
-    row.w = rep(1, nrow(X))/nrow(X)
-  if (!any(is.na(X))) 
-    stop("no missing values in X, this function is not useful. Perform MFA on X.")
+  if (is.null(row.w)) row.w = rep(1, nrow(X))/nrow(X)
+  if (length(ind.sup)>0) row.w[ind.sup] <- row.w[ind.sup] * 1e-08
+  if (!any(is.na(X))) stop("no missing values in X, this function is not useful. Perform MFA on X.")
   res.impute <- impute(X, group = group, ncp = ncp, type = type, 
                        method = method, threshold = threshold, seed = seed, 
-                       maxiter = maxiter, row.w = row.w, coeff.ridge = coeff.ridge)
+                       maxiter = maxiter, row.w = row.w, ind.sup = ind.sup, 
+					   num.group.sup=num.group.sup, coeff.ridge = coeff.ridge)
   return(res.impute)
 }
 

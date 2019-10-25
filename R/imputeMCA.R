@@ -1,4 +1,5 @@
-imputeMCA <- function(don,ncp=2,method=c("Regularized","EM"),row.w=NULL,coeff.ridge=1,threshold=1e-6,seed=NULL,maxiter=1000){   
+imputeMCA <- function(don,ncp=2,method=c("Regularized","EM"),row.w=NULL,coeff.ridge=1,threshold=1e-6,
+      ind.sup = NULL, quanti.sup=NULL, quali.sup=NULL, seed=NULL,maxiter=1000){   
  
     moy.p <- function(V, poids) {
         res <- sum(V * poids,na.rm=TRUE)/sum(poids[!is.na(V)])
@@ -43,15 +44,54 @@ tab.disjonctif.NA <- function(tab) {
 
 ########## Debut programme principal
 don <- as.data.frame(don)
+
+  is.quali <- which(!unlist(lapply(don,is.numeric)))
+  don[,is.quali] <- lapply(don[,is.quali,drop=FALSE],as.factor)
+
+  if (!is.null(which(lapply(don,class)=="logical"))){
+    for (k in which(lapply(don,class)=="logical")) don[,k] <- as.factor(don[,k])
+  }
+   
 method <- match.arg(method,c("Regularized","regularized","EM","em"),several.ok=T)[1]
 method <- tolower(method)
 don <- droplevels(don)
 if (is.null(row.w)) row.w<-rep(1/nrow(don),nrow(don))
-if (ncp==0) return(list(tab.disj=tab.disjonctif.prop(don,NULL,row.w=row.w),completeObs = find.category(don,tab.disjonctif.prop(don,NULL,row.w=row.w))))
+if (!is.null(ind.sup)) row.w[ind.sup] <- 1e-08/length(row.w)   # divide by the number of individuals to be sure that the weight will be small
+ Vec <- rep("var",ncol(don))
+ NLevels <- sapply(don,nlevels)
+ if (!is.null(quali.sup)) Vec[quali.sup] <- "quali.sup"
+ if (!is.null(quanti.sup)){
+   Vec[quanti.sup] <- "quanti.sup"
+   NLevels[NLevels==0] <- 1
+ }
+ TabDisjMod <- rep(Vec,NLevels)
+ 
+if (ncp==0) {
+  if (is.null(quanti.sup)){
+    tab.disj <- tab.disjonctif.prop(don,NULL,row.w=row.w)
+    compObs <- find.category(don,tab.disj)
+  } else {
+    tab.disj <- tab.disjonctif.prop(don[,-quanti.sup],NULL,row.w=row.w)
+    compObs <- find.category(don[,-quanti.sup],tab.disj)
+	aux <- don
+	aux[,-quanti.sup] <- compObs
+	compObs <- aux
 
-tab.disj.NA <- tab.disjonctif.NA(don)
+    Tabaux <- cbind.data.frame(tab.disj,don[,quanti.sup,drop=FALSE])
+	ordre <- c(which(TabDisjMod!="quanti.sup"),which(TabDisjMod=="quanti.sup"))
+	tab.disj <- Tabaux[,order(ordre)]
+  }
+  return(list(tab.disj=tab.disj,completeObs = compObs))
+}
+
+if (is.null(quanti.sup)) {
+  tab.disj.NA <- tab.disjonctif.NA(don)
+  tab.disj.comp <- tab.disjonctif.prop(don,seed,row.w=row.w)
+} else {
+  tab.disj.NA <- tab.disjonctif.NA(don[,-quanti.sup])
+  tab.disj.comp <- tab.disjonctif.prop(don[,-quanti.sup],seed,row.w=row.w)
+}
 hidden <- which(is.na(tab.disj.NA))
-tab.disj.comp <- tab.disjonctif.prop(don,seed,row.w=row.w)
 tab.disj.rec.old <- tab.disj.comp
 
 continue <- TRUE
@@ -60,6 +100,7 @@ nbiter <- 0
 while (continue){
 
   nbiter <- nbiter+1
+  if (length(quali.sup) >0) tab.disj.comp[,TabDisjMod[TabDisjMod!="quanti.sup"]=="quali.sup"] <- tab.disj.comp[,TabDisjMod[TabDisjMod!="quanti.sup"]=="quali.sup"] * 1e-08
   M <- apply(tab.disj.comp, 2, moy.p,row.w)/ncol(don)
   if (any(M<0)) stop(paste("The algorithm fails to converge. Choose a number of components (ncp) less or equal than ",ncp-1," or a number of iterations (maxiter) less or equal than ",maxiter-1,sep=""))
 
@@ -69,8 +110,10 @@ while (continue){
 
   svd.Zscale <- FactoMineR::svd.triplet(Zscale,row.w=row.w,ncp=ncp)
   moyeig <- 0
-  if (nrow(don)>(ncol(Zscale)-ncol(don))) moyeig <- mean(svd.Zscale$vs[-c(1:ncp,(ncol(Zscale)-ncol(don)+1):ncol(Zscale))]^2)
-  else moyeig <- mean(svd.Zscale$vs[-c(1:ncp)]^2)
+  if (length(quanti.sup)+length(quali.sup)>0) NcolZscale <- length(TabDisjMod=="var")
+  else NcolZscale <- ncol(Zscale)
+  if (nrow(don)>(NcolZscale-ncol(don))) moyeig <- mean(svd.Zscale$vs[-c(1:ncp,(NcolZscale-ncol(don)-length(quali.sup)- length(quanti.sup)+1):NcolZscale)]^2)
+  else moyeig <- mean(svd.Zscale$vs[-c(1:ncp,NcolZscale:length(svd.Zscale$vs))]^2)
   moyeig <- min(moyeig*coeff.ridge,svd.Zscale$vs[ncp+1]^2)
   if (method=="em") moyeig <-0
   eig.shrunk <- ((svd.Zscale$vs[1:ncp]^2-moyeig)/svd.Zscale$vs[1:ncp])
@@ -86,10 +129,22 @@ while (continue){
   relch <- sum(diff^2*row.w)
   tab.disj.rec.old <- tab.disj.rec
   tab.disj.comp[hidden] <- tab.disj.rec[hidden]
+  if (length(quali.sup) >0) tab.disj.comp[,TabDisjMod[TabDisjMod!="quanti.sup"]=="quali.sup"] <- tab.disj.comp[,TabDisjMod[TabDisjMod!="quanti.sup"]=="quali.sup"] * 1e+08
   continue=(relch > threshold)&(nbiter<maxiter)
 }
-tab <- find.category(don,tab.disj.comp)
+if (is.null(quanti.sup)){
+    compObs <- find.category(don,tab.disj.comp)
+  } else {
+    compObs <- find.category(don[,-quanti.sup],tab.disj.comp)
+	aux <- don
+	aux[,-quanti.sup] <- compObs
+	compObs <- aux
 
-return(list(tab.disj=tab.disj.comp,completeObs = tab))
+    Tabaux <- cbind.data.frame(tab.disj.comp,don[,quanti.sup,drop=FALSE])
+	ordre <- c(which(TabDisjMod!="quanti.sup"),which(TabDisjMod=="quanti.sup"))
+	tab.disj.comp <- Tabaux[,order(ordre)]
+  }
+
+return(list(tab.disj=tab.disj.comp,completeObs = compObs))
 }
 

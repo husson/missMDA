@@ -4,7 +4,8 @@
 \description{Impute the missing values of a dataset with Multiple Factor Analysis (MFA). The variables are structured a priori into groups of variables. The variables can be continuous or categorical but within a group the nature of the variables is the same.  Can be used as a preliminary step before performing MFA on an incomplete dataset.}
 
 \usage{imputeMFA(X, group, ncp = 2, type=rep("s",length(group)), method = c("Regularized","EM"), 
-       row.w = NULL, coeff.ridge = 1,threshold = 1e-06, seed = NULL, maxiter = 1000, ...)
+       row.w = NULL, coeff.ridge = 1,threshold = 1e-06, ind.sup = NULL,  
+	   num.group.sup = NULL, seed = NULL, maxiter = 1000, ...)
 	   }
 
 \arguments{
@@ -17,6 +18,8 @@
   \item{row.w}{row weights (by default, a vector of 1 for uniform row weights)}
   \item{coeff.ridge}{1 by default to perform the regularized imputeMFA algorithm; useful only if method="Regularized". Other regularization terms can be implemented by setting the value to less than 1 in order to regularized less (to get closer to the results of the EM method) or more than 1 to regularized more}
   \item{threshold}{the threshold for assessing convergence}
+  \item{ind.sup}{a vector indicating the indexes of the supplementary individuals}
+  \item{num.group.sup}{a vector indicating the group of variables that are supplementary}
   \item{seed}{integer, by default seed = NULL implies that missing values are initially imputed by the mean of each variable for the continuous variables and by the proportion of the category for the categorical variables coded with indicator matrices of dummy variables. Other values leads to a random initialization}
   \item{maxiter}{integer, maximum number of iteration for the algorithm}
   \item{\dots}{further arguments passed to or from other methods}

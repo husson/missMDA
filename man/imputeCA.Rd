@@ -4,7 +4,8 @@
 \title{Impute contingency table}
 \description{Impute the missing entries of a contingency table using Correspondence Analysis (CA). Can be used as a preliminary step before performing CA on an incomplete dataset.}
 \usage{
-imputeCA(X, ncp = 2, threshold = 1e-08, maxiter = 1000)
+imputeCA(X, ncp = 2, threshold = 1e-08, maxiter = 1000, row.sup=NULL, 
+     col.sup=NULL, quanti.sup=NULL, quali.sup=NULL)
 }
 
 \arguments{
@@ -12,6 +13,10 @@ imputeCA(X, ncp = 2, threshold = 1e-08, maxiter = 1000)
   \item{ncp}{integer corresponding to the number of dimensions used  to predict the missing entries}
   \item{threshold}{the threshold for assessing convergence}
   \item{maxiter}{integer, maximum number of iterations for the regularized iterative CA algorithm}
+  \item{row.sup}{a vector indicating the indexes of the supplementary rows}
+  \item{col.sup}{a vector indicating the indexes of the supplementary columns}
+  \item{quanti.sup}{a vector indicating the indexes of the quantitative supplementary variables}
+  \item{quali.sup}{a vector indicating the indexes of the categorical supplementary variables}
 }
 \details{
 Impute the missing entries of a contingency table using a regularized CA algorithm. 

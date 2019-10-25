@@ -5,7 +5,8 @@
 \usage{
 estim_ncpPCA(X, ncp.min = 0, ncp.max = 5, method = c("Regularized","EM"), 
        scale = TRUE, method.cv = c("gcv","loo","Kfold"), nbsim = 100, 
-	   pNA = 0.05, threshold=1e-4, verbose = TRUE)
+	   pNA = 0.05, quanti.sup=NULL,quali.sup=NULL,ind.sup=NULL, 
+	   threshold=1e-4, verbose = TRUE)
 }
 \arguments{
   \item{X}{a data.frame with continuous variables; with missing entries or not}
@@ -16,6 +17,9 @@ estim_ncpPCA(X, ncp.min = 0, ncp.max = 5, method = c("Regularized","EM"),
   \item{method.cv}{string with the values "gcv" for generalised cross-validation, "loo" for leave-one-out or "Kfold" cross-validation}
   \item{nbsim}{number of simulations, useful only if method.cv="Kfold"}
   \item{pNA}{percentage of missing values added in the data set, useful only if method.cv="Kfold"}
+  \item{ind.sup}{a vector indicating the indexes of the supplementary individuals}
+  \item{quanti.sup}{a vector indicating the indexes of the quantitative supplementary variables}
+  \item{quali.sup}{a vector indicating the indexes of the categorical supplementary variables}
   \item{threshold}{the threshold for assessing convergence}
   \item{verbose}{boolean. TRUE means that a progressbar is writtent}
 }

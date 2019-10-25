@@ -2,7 +2,7 @@ Package: missMDA
 Type: Package
 Title: Handling Missing Values with Multivariate Data Analysis
 Version: 1.14
-Date: 2019-01-23
+Date: 2019-10-24
 Author: Francois Husson, Julie Josse
 Maintainer: Francois Husson <husson@agrocampus-ouest.fr>
 Description: Imputation of incomplete continuous or categorical datasets; Missing values are imputed with a principal component analysis (PCA), a multiple correspondence analysis (MCA) model or a multiple factor analysis (MFA) model; Perform multiple imputation with and in PCA or MCA.

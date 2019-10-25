@@ -1,4 +1,4 @@
-estim_ncpPCA <- function(X,ncp.min=0,ncp.max=5,method=c("Regularized","EM"),scale=TRUE,method.cv=c("gcv","loo","Kfold"),nbsim=100,pNA=0.05,threshold=1e-4, verbose=TRUE){
+estim_ncpPCA <- function(X,ncp.min=0,ncp.max=5,method=c("Regularized","EM"),scale=TRUE,method.cv=c("gcv","loo","Kfold"),nbsim=100,pNA=0.05,quanti.sup=NULL,quali.sup=NULL,ind.sup=NULL,threshold=1e-4, verbose=TRUE){
 
 ## method = "em" or "Regularized"
 ## method.cv = "loo" (for leave-one-out) or "Kfold" (a percentage of pNA missing values is added and nbsim are done)
@@ -7,6 +7,8 @@ method.cv <- match.arg(method.cv,c("gcv","loo","Kfold","GCV","kfold","LOO"),seve
 
 method <- tolower(method)
 method.cv <- tolower(method.cv)
+if (!is.null(ind.sup)) X <- X[-ind.sup,]
+if (!is.null(quanti.sup) | !is.null(quali.sup)) X <- X[,-c(quanti.sup,quali.sup)]
 X <- as.matrix(X)
 auxi = NULL
 for (j in 1:ncol(X)) if (!is.numeric(X[,j])) auxi = c(auxi,colnames(X)[j])
@@ -22,8 +24,6 @@ ncp.max <- min(nrow(X)-2,ncol(X)-1,ncp.max)
 crit <- NULL
     if (ncp.min == 0) crit = mean((X - rep(colMeans(X, na.rm = TRUE), each = nrow(X)))^2, na.rm = TRUE)
     for (q in max(ncp.min, 1):ncp.max) {
-#        res.pca = PCA(imputePCA(X,scale=scale,ncp=q,method=method,maxiter=1000)$completeObs, scale = scale, graph = FALSE, ncp = max(q, 2))
-#        rec = reconst(res.pca, ncp = q)
         rec = imputePCA(X,scale=scale,ncp=q,method=method,maxiter=1000)$fittedX
         crit = c(crit, mean(((n * p - sum(is.na(X))) * (X - rec)/((n-1) * p - sum(is.na(X)) - q * (n + p - q-1)))^2, na.rm = T))
 	}
