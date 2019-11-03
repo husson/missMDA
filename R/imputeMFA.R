@@ -85,38 +85,37 @@ imputeMFA<-function (X, group, ncp = 2, type = rep("s", length(group)),
     #case ncp=0
     if (ncp == 0){
       result <- list()
-      
-      if(sum(unlist(lapply(X,is.numeric)))>0){
-        ind.quanti<-which(unlist(lapply(X,is.numeric)))
-      }else{
-        ind.quanti<-NULL
-      }
-      if(sum(lapply(X,class)=="factor")>0){
-        ind.quali<-which((lapply(X,class))=="factor")
-      }else{
-        ind.quali<-NULL
-      }
-      
-      #complete obs
-      
+ 
+      if(sum(unlist(lapply(X,is.numeric)))>0) ind.quanti<-which(unlist(lapply(X,is.numeric)))
+      else ind.quanti<-NULL
+      if(sum(lapply(X,class)=="factor")>0) ind.quali<-which((lapply(X,class))=="factor")
+      else ind.quali<-NULL
       #quali
       result$completeObs <- X
-      result$completeObs[,ind.quali] <- find.category(X[,ind.quali,drop=F], tab.disjonctif.prop(X[,ind.quali,drop=F],row.w=row.w))
+      if (!is.null(ind.quali)) result$completeObs[,ind.quali] <- find.category(X[,ind.quali,drop=F], tab.disjonctif.prop(X[,ind.quali,drop=F],row.w=row.w))
       #quanti
-      tab.disj <- X[,ind.quanti,drop=F]
-      Moy<-matrix(colMeans(tab.disj,na.rm=T),nrow=nrow(tab.disj),ncol=ncol(tab.disj),byrow=T)
-      tab.disj[is.na(tab.disj)]<-Moy[is.na(tab.disj)]
-      result$completeObs[,ind.quanti] <- tab.disj
-      
+      if (!is.null(ind.quanti)){
+	    tab.disj <- X[,ind.quanti,drop=F]
+        Moy<-matrix(colMeans(tab.disj,na.rm=T),nrow=nrow(tab.disj),ncol=ncol(tab.disj),byrow=T)
+        tab.disj[is.na(tab.disj)]<-Moy[is.na(tab.disj)]
+        result$completeObs[,ind.quanti] <- tab.disj
+	  }
       
       #tdc
       nbdummy <- rep(1, ncol(X))
       is.quali <- which(!unlist(lapply(X, is.numeric)))
-      nbdummy[is.quali] <- unlist(lapply(X[, is.quali, drop = FALSE], nlevels))
-      tabdisj <- matrix(NA,nrow(X),ncol=sum(nbdummy))
-      tabdisj[,cumsum(nbdummy)[which(nbdummy==1)]]<- as.matrix(result$completeObs[,ind.quanti,drop=F])
-      tabdisj[,-cumsum(nbdummy)[which(nbdummy==1)]]<- tab.disjonctif.prop(X[,ind.quali,drop=F],row.w=row.w)
-      result$tab.disj <- tabdisj
+	  if (length(is.quali)!=0){
+        nbdummy[is.quali] <- unlist(lapply(X[, is.quali, drop = FALSE], nlevels))
+        tabdisj <- matrix(NA,nrow(X),ncol=sum(nbdummy))
+        tabdisj[,cumsum(nbdummy)[which(nbdummy==1)]]<- as.matrix(result$completeObs[,ind.quanti,drop=F])
+	    auxQuali <- tab.disjonctif.prop(X[,ind.quali,drop=F],row.w=row.w)
+        tabdisj[,-cumsum(nbdummy)[which(nbdummy==1)]]<- auxQuali
+        rownames(tabdisj) <- rownames(X)
+        colnames(tabdisj) <- paste0("v",1:ncol(tabdisj))
+        colnames(tabdisj)[cumsum(nbdummy)[which(nbdummy==1)]] <- colnames(result$completeObs[,ind.quanti,drop=F])
+        colnames(tabdisj)[-cumsum(nbdummy)[which(nbdummy==1)]] <- colnames(auxQuali)
+        result$tab.disj <- tabdisj
+	  }
       
       # ind.var, group.mod
       
