@@ -5,7 +5,7 @@
 \usage{
 estim_ncpPCA(X, ncp.min = 0, ncp.max = 5, method = c("Regularized","EM"), 
        scale = TRUE, method.cv = c("gcv","loo","Kfold"), nbsim = 100, 
-	   pNA = 0.05, quanti.sup=NULL,quali.sup=NULL,ind.sup=NULL, 
+	   pNA = 0.05, ind.sup=NULL, quanti.sup=NULL, quali.sup=NULL,
 	   threshold=1e-4, verbose = TRUE)
 }
 \arguments{

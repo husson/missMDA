@@ -1,4 +1,4 @@
-estim_ncpMCA <- function(don,ncp.min=0,ncp.max=5,method=c("Regularized","EM"),method.cv=c("Kfold","loo"),nbsim=100,pNA=0.05,threshold=1e-4,verbose=TRUE){
+estim_ncpMCA <- function(don,ncp.min=0,ncp.max=5,method=c("Regularized","EM"),method.cv=c("Kfold","loo"),nbsim=100,pNA=0.05,ind.sup=NULL,quanti.sup=NULL,quali.sup=NULL,threshold=1e-4,verbose=TRUE){
 
 #### Debut tab.disjonctif.NA
 tab.disjonctif.NA<-function (tab) {
@@ -40,7 +40,9 @@ tab.disjonctif.NA<-function (tab) {
 
 ########## Debut programme principal
 don <- as.data.frame(don)
-  method <- match.arg(method,c("Regularized","regularized","EM","em"),several.ok=T)[1]
+if (!is.null(ind.sup)) don <- don[-ind.sup,]
+if (!is.null(quanti.sup) | !is.null(quali.sup)) don <- don[,-c(quanti.sup,quali.sup)]
+method <- match.arg(method,c("Regularized","regularized","EM","em"),several.ok=T)[1]
 method.cv <- match.arg(method.cv,c("loo","Kfold","kfold","LOO"),several.ok=T)[1]
 method <- tolower(method)
 method.cv <- tolower(method.cv)

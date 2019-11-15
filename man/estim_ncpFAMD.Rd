@@ -4,8 +4,8 @@
 \description{Estimate the number of dimensions for the Factorial Analysis of Mixed Data by cross-validation}
 \usage{
 estim_ncpFAMD(don, ncp.min=0, ncp.max=5,  method = c("Regularized","EM"), 
-     method.cv = c("Kfold","loo"), nbsim=100, pNA=0.05, threshold=1e-4,
-	 verbose = TRUE)
+     method.cv = c("Kfold","loo"), nbsim=100, pNA=0.05, ind.sup=NULL,
+	 sup.var=NULL, threshold=1e-4, verbose = TRUE)
 }
 \arguments{
   \item{don}{a data.frame with categorical variables; with missing entries or not}
@@ -15,6 +15,8 @@ estim_ncpFAMD(don, ncp.min=0, ncp.max=5,  method = c("Regularized","EM"),
   \item{method.cv}{"Kfold" for cross-validation or "loo" for leave-one-out}
   \item{nbsim}{number of simulations, useful only if method.cv="Kfold"}
   \item{pNA}{percentage of missing values added in the data set, useful only if method.cv="Kfold"}
+  \item{ind.sup}{a vector indicating the indexes of the supplementary individuals}
+  \item{sup.var}{a vector indicating the indexes of the supplementary variables (quantitative and categorical)}
   \item{threshold}{the threshold for assessing convergence}
   \item{verbose}{boolean. TRUE means that a progressbar is writtent}
 }
