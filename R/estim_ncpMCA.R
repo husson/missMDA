@@ -61,7 +61,7 @@ for (sim in 1:nbsim){
  while(compteur<50){
     donNA <- prodna(don, pNA)
     for (i in 1:ncol(don)) donNA[,i]=as.factor(as.character(donNA[,i]))
-    compteur <- 1+100*(sum(unlist(sapply(as.data.frame(donNA),nlevels)))==sum(unlist(sapply(don,nlevels))))
+    compteur <- 1+100*(sum(unlist(sapply(as.data.frame(droplevels(donNA)),nlevels)))==sum(unlist(sapply(don,nlevels))))
   }
   if (compteur<100) stop('It is too difficult to suppress some cells.\nMaybe several categories are taken by only 1 individual. You should uppress these variables or try with method.cv="loo".')
  for (nbaxes in ncp.min:ncp.max){

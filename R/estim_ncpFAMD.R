@@ -63,7 +63,7 @@ if (!is.null(sup.var)) don <- don[,-sup.var]
       continue<-TRUE
       while(continue){
         jeuNA <- prodna(jeu, pNA)
-        continue<-    continue<- (sum(unlist(sapply(as.data.frame(jeuNA[,-c(1:nbquanti),drop=F]),nlevels)))!=sum(unlist(sapply(jeu,nlevels))))
+        continue<-    continue<- (sum(unlist(sapply(as.data.frame(droplevels(jeuNA[,-c(1:nbquanti),drop=F])),nlevels)))!=sum(unlist(sapply(jeu,nlevels))))
       }
       
       for (nbaxes in ncp.min:ncp.max) {

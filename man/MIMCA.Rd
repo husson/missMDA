@@ -61,3 +61,4 @@ summary(res.pool)
 }
 }
 \keyword{multivariate}
+\keyword{imputation}

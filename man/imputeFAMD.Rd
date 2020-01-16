@@ -55,3 +55,4 @@ res.afdm <- FAMD(ozone,tab.disj=res.impute$tab.disj)
 }
 \keyword{models}
 \keyword{multivariate}
+\keyword{imputation}

@@ -31,7 +31,7 @@ We advice to use the regularized version of the algorithm to avoid the overfitti
 \author{Francois Husson  \email{husson@agrocampus-ouest.fr} and Julie Josse  \email{julie.josse@polytechnique.edu}
 }
 
-\references{Imputation of mixed data with multilevel singular value decomposition. F. Husson, J. Josse, B. Narasimhan, G. Robin}
+\references{F. Husson, J. Josse, B. Narasimhan, G. Robin (2019). Imputation of mixed data with multilevel singular value decomposition. Journal of Computational and Graphical Statistics, 28 (3), pp. 552-566 <DOI:10.1080/10618600.2019.1585261>}
 
 \seealso{\code{\link{imputePCA}},\code{\link{imputeFAMD}}}
 \examples{
@@ -43,3 +43,4 @@ res <- imputeMultilevel(ozone, ifac=12, ncpB=2, ncpW=2)
 }
 \keyword{models}
 \keyword{multivariate}
+\keyword{imputation}

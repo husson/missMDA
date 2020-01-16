@@ -101,7 +101,7 @@ if ((choice=="all")|(choice=="ind.proc")){
   if (is.null(rownames(res$call$X))) rownames(res$call$X) <- 1:nrow(res$call$X)
   el=coord.ellipse(cbind.data.frame(as.factor(rep(rownames(res$call$X),res$call$nboot)),oo$ind.sup$coord[,axes]),level.conf=level.conf) 
   if (is.null(main)) title="Multiple imputation using Procrustes" 
-  plot(oo,axes=axes,col.ind.sup=rep(1:nrow(res$call$X),res$call$nboot),label="ind",ellipse=el,col.quali="black", title=title,invisible="ind.sup",new.plot=FALSE)
+  plot(oo,axes=axes,col.ind.sup=rep(1:nrow(res$call$X),res$call$nboot),label="ind",ellipse=el,col.quali="black", title=title,invisible="ind.sup",new.plot=FALSE,graph.type="classic")
 
 #  if (!is.null(add.tab)){
 #    vrai = PCA(add.tab,graph=FALSE,scale=res$call$scale)
@@ -116,7 +116,7 @@ if ((choice=="all")|(choice=="dim")){
   ooo=FactoMineR::PCA(res.dim,quanti.sup=(ncol(res$call$X)+1):ncol(res.dim),scale.unit=res$call$scale,graph=FALSE)
   ooo$eig=reference$eig
   if (is.null(main)) title="Projection of the Principal Components"  
-  plot(ooo,choi="var",axes=axes,title=title,label="none",new.plot=FALSE,invisible="var")
+  plot(ooo,choi="var",axes=axes,title=title,label="none",new.plot=FALSE,invisible="var",graph.type="classic")
 }
 
 if ((choice=="all")|(choice=="ind.supp")){
@@ -125,7 +125,7 @@ if ((choice=="all")|(choice=="ind.supp")){
   el=coord.ellipse(cbind.data.frame(as.factor(rep(rownames(res$call$X),res$call$nboot)),oo$ind.sup$coord),level.conf = level.conf,axes = axes)
   if (is.null(main)) title="Supplementary projection"    
   plot(oo,axes=axes,col.ind.sup=rep(1:nrow(res$call$X),res$call$nboot),label="ind",ellipse=el,col.quali="black",
-    title=title,invisible="ind.sup",new.plot=FALSE)
+    title=title,invisible="ind.sup",new.plot=FALSE,graph.type="classic")
 #  if (!is.null(add.tab)){
 #    dele = PCA(rbind.data.frame(rec.pca,add.tab),ind.sup=c((nrow(res$call$X)+1):(2*nrow(res$call$X))),scale=scale,graph=FALSE)
 #    points(dele$ind.sup$coord[,axes],col=2)
@@ -147,7 +147,7 @@ if ((choice=="all")|(choice=="var")){
   colnames(res.var)[1:ncol(res$call$X)]=colnames(res$call$X)
   oo=FactoMineR::PCA(res.var,quanti.sup=c((ncol(res$call$X)+1):ncol(res.var)),scale.unit=res$call$scale,graph=FALSE)
   if (is.null(main)) title="Variable representation"    
-  plot(oo, axes=axes, choix = "var", title=title,invisible = "quanti.sup", col.hab = color[1:ncol(res$call$X)],new.plot=FALSE)
+  plot(oo, axes=axes, choix = "var", title=title,invisible = "quanti.sup", col.hab = color[1:ncol(res$call$X)],new.plot=FALSE,graph.type="classic")
   for (k in 1:res$call$nboot) points(oo$quanti.sup$coord[((k-1)*ncol(res$call$X)+1):(k*ncol(res$call$X)),axes[1]], oo$quanti.sup$coord[((k-1)*ncol(res$call$X)+1):(k*ncol(res$call$X)),axes[2]], col = color[1:ncol(res$call$X)], pch = 15, cex = 0.3)
 }
 }

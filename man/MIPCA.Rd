@@ -80,3 +80,4 @@ res.over<-Overimpute(res.BayesMIPCA)
 }
 }
 \keyword{multivariate}
+\keyword{imputation}

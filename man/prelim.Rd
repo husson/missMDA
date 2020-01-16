@@ -40,4 +40,5 @@ summary(res.pool)
 }
 }
 
-\keyword{multivariate,imputation,categorical,nominal}
+\keyword{multivariate}
+\keyword{imputation}

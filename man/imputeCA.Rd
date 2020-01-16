@@ -48,3 +48,4 @@ res.ca <- CA(res.impute)
 }
 \keyword{models}
 \keyword{multivariate}
+\keyword{imputation}
