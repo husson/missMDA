@@ -73,7 +73,7 @@ plot.MIMCA<-function (x, choice = "all", axes = c(1, 2), new.plot = TRUE,
     #plot PCA pour modifier label axes
     par(col.lab="white")
     FactoMineR::plot.PCA(res.pca, axes = 1:2, col.ind.sup = col.ind.sup, label = label, col.quali = col.quali, ellipse = el,
-             title = title, invisible = invisible, new.plot = new.plot)
+             title = title, invisible = invisible, new.plot = new.plot,graph.type="classic")
     par(col.lab="black")
     mtext(paste("Dim ", axes[1], " (", format(res.pca$eig[1,2], nsmall = 2, digits = 2), "%)", sep = ""), side=1, line=3)
     mtext(paste("Dim ", axes[2], " (", format(res.pca$eig[2,2], nsmall = 2, digits = 2), "%)", sep = ""), side=2, line=3)
@@ -109,20 +109,20 @@ plot.MIMCA<-function (x, choice = "all", axes = c(1, 2), new.plot = TRUE,
   if (!is.null(main)) 
     title <- main
   if ((choice == "all") | (choice == "ind.proc")) {
-    if (new.plot){dev.new()}
+    if ((new.plot)&!nzchar(Sys.getenv("RSTUDIO_USER_IDENTITY"))) dev.new()
     oo = FactoMineR::PCA(res.procrustes, ind.sup = c((nrow(res$call$X) + 1):nrow(res.procrustes)), scale.unit = FALSE, graph = FALSE)
     oo$eig = reference$eig
     el = coord.ellipse(cbind.data.frame(as.factor(rep(rownames(res$call$X), res$call$nboot)), oo$ind.sup$coord[, axes]), level.conf = level.conf)
     if (is.null(main)){title = "Multiple imputation using Procrustes"}
-    plot(oo, axes = axes, col.ind.sup = rep(1:nrow(res$call$X), res$call$nboot), label = "ind", ellipse = el, col.quali = "black", title = title, invisible = "ind.sup", new.plot = FALSE)
+    plot(oo, axes = axes, col.ind.sup = rep(1:nrow(res$call$X), res$call$nboot), label = "ind", ellipse = el, col.quali = "black", title = title, invisible = "ind.sup", new.plot = FALSE,graph.type="classic")
   }
   if ((choice == "all") | (choice == "dim")) {
     if ((new.plot) & !nzchar(Sys.getenv("RSTUDIO_USER_IDENTITY"))) {dev.new()}
     colnames(res.dim) = paste("V", 1:ncol(res.dim))
-    ooo = FactoMineR::MCA(res.dim, quanti.sup = (ncol(res$call$X) + 1):ncol(res.dim), graph = FALSE,tab.disj = res$res.imputeMCA,ncp = ncp)
+    ooo = FactoMineR::MCA(res.dim, quanti.sup = (ncol(res$call$X) + 1):ncol(res.dim), graph = FALSE,tab.disj = cbind(res$res.imputeMCA,res.dim[,-(1:ncol(res$call$X))]),ncp = ncp)
     ooo$eig = reference$eig
     if (is.null(main)){title <- "Projection of the Principal Components"}
-    plot(ooo, choi = "quanti.sup", axes = axes, title = title, label = "none", new.plot = FALSE)
+    plot(ooo, choi = "quanti.sup", axes = axes, title = title, label = "none", new.plot = FALSE, graph.type="classic")
   }
   
   if ((choice == "all") | (choice == "ind.supp")) {
@@ -146,8 +146,7 @@ plot.MIMCA<-function (x, choice = "all", axes = c(1, 2), new.plot = TRUE,
   
   
   if ((choice == "all") | (choice == "mod.supp")) {
-    if ((new.plot) & !nzchar(Sys.getenv("RSTUDIO_USER_IDENTITY"))) 
-      dev.new()
+    if ((new.plot) & !nzchar(Sys.getenv("RSTUDIO_USER_IDENTITY"))) dev.new()
 
     coordmodsup<-sapply(1:length(coordinsup),FUN=function(indic,coord,tabdisj,don){
       res.mca<-FactoMineR::MCA(res$call$X,graph=F,tab.disj = tabdisj[,,indic])

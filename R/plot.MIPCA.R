@@ -95,13 +95,13 @@ for (i in 1:length(res$res.MI)){
 ####
 if (!is.null(main)) title <- main
 if ((choice=="all")|(choice=="ind.proc")){
-  if (new.plot) dev.new()
+  if ((new.plot)&!nzchar(Sys.getenv("RSTUDIO_USER_IDENTITY"))) dev.new()
   oo=FactoMineR::PCA(res.procrustes,ind.sup=c((nrow(res$call$X)+1):nrow(res.procrustes)),scale.unit=FALSE,graph=FALSE)
   oo$eig=reference$eig
   if (is.null(rownames(res$call$X))) rownames(res$call$X) <- 1:nrow(res$call$X)
   el=coord.ellipse(cbind.data.frame(as.factor(rep(rownames(res$call$X),res$call$nboot)),oo$ind.sup$coord[,axes]),level.conf=level.conf) 
   if (is.null(main)) title="Multiple imputation using Procrustes" 
-  plot(oo,axes=axes,col.ind.sup=rep(1:nrow(res$call$X),res$call$nboot),label="ind",ellipse=el,col.quali="black", title=title,invisible="ind.sup",new.plot=FALSE,graph.type="classic")
+  plot(oo,axes=axes,col.ind.sup=rep(1:nrow(res$call$X),res$call$nboot),label="ind",ellipse=el,col.quali=1, title=title,invisible="ind.sup",new.plot=FALSE,graph.type="classic")
 
 #  if (!is.null(add.tab)){
 #    vrai = PCA(add.tab,graph=FALSE,scale=res$call$scale)
@@ -124,8 +124,9 @@ if ((choice=="all")|(choice=="ind.supp")){
   oo=FactoMineR::PCA(res.supp,ind.sup=c((nrow(res$call$X)+1):nrow(res.supp)),scale.unit=res$call$scale,graph=FALSE,ncp=ncp)
   el=coord.ellipse(cbind.data.frame(as.factor(rep(rownames(res$call$X),res$call$nboot)),oo$ind.sup$coord),level.conf = level.conf,axes = axes)
   if (is.null(main)) title="Supplementary projection"    
-  plot(oo,axes=axes,col.ind.sup=rep(1:nrow(res$call$X),res$call$nboot),label="ind",ellipse=el,col.quali="black",
+  plot(oo,axes=axes,col.ind.sup=rep(1:nrow(res$call$X),res$call$nboot),label="ind",ellipse=el,col.quali=1,
     title=title,invisible="ind.sup",new.plot=FALSE,graph.type="classic")
+
 #  if (!is.null(add.tab)){
 #    dele = PCA(rbind.data.frame(rec.pca,add.tab),ind.sup=c((nrow(res$call$X)+1):(2*nrow(res$call$X))),scale=scale,graph=FALSE)
 #    points(dele$ind.sup$coord[,axes],col=2)
