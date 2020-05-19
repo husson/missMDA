@@ -6,7 +6,7 @@
 \description{From the multiple imputed datasets, the function plots graphs for the individuals, variables and dimensions for the Principal Component Analysis (PCA)}
 
 \usage{\method{plot}{MIPCA}(x, choice = "all", axes = c(1, 2), new.plot = TRUE, 
-   main = NULL, level.conf = 0.95, \dots)
+   main = NULL, level.conf = 0.95, graph.type = c("ggplot","classic"), \dots)
 }
 
 \arguments{
@@ -16,6 +16,7 @@
   \item{new.plot}{boolean, if TRUE, a new graphical device is created}
   \item{main}{string corresponding to the title of the graph you draw (by default NULL and a title is chosen)}
   \item{level.conf}{confidence level used to construct the ellipses. By default, 0.95}
+  \item{graph.type}{a character that gives the type of graph used: "ggplot" or "classic"}
   \item{\dots}{further arguments passed to or from other methods}
 }
 
@@ -30,6 +31,7 @@ Four graphs can be drawn:
   \item{var}{The variables of the imputed datasets are projected as supplementary variables onto the reference PCA map}
   \item{ind.proc}{A PCA is performed on each imputed dataset and each configuration of scores is rotated onto the reference PCA map with procrustes rotation; then confidence ellipses are drawn}
   \item{dim}{The dimensions of each imputed dataset are projected as supplementary variables onto the dimensions of the reference PCA dimensions}
+  \item{graph}{if the \code{graph.type=ggplot} an object with a list with the ggplot graphs that can be modified and plotted}
 }
 \references{Josse, J., Husson, F. (2010). Multiple Imputation in PCA}
 

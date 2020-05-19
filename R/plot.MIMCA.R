@@ -69,19 +69,27 @@ plot.MIMCA<-function (x, choice = "all", axes = c(1, 2), new.plot = TRUE,
     return(rs)
   }
   
-  plot.tmp<-function(res.pca,axes,col.ind.sup,label,col.quali,ellipse,title,invisible, new.plot){
+  plot.tmp<-function(res.pca,axes,col.ind.sup,label,col.quali,ellipse,title,invisible, new.plot,graph.type){
     #plot PCA pour modifier label axes
-    par(col.lab="white")
-    FactoMineR::plot.PCA(res.pca, axes = 1:2, col.ind.sup = col.ind.sup, label = label, col.quali = col.quali, ellipse = el,
-             title = title, invisible = invisible, new.plot = new.plot,graph.type="classic")
-    par(col.lab="black")
-    mtext(paste("Dim ", axes[1], " (", format(res.pca$eig[1,2], nsmall = 2, digits = 2), "%)", sep = ""), side=1, line=3)
-    mtext(paste("Dim ", axes[2], " (", format(res.pca$eig[2,2], nsmall = 2, digits = 2), "%)", sep = ""), side=2, line=3)
+    if (graph.type=="classic"){
+  	  par(col.lab="white")
+      FactoMineR::plot.PCA(res.pca, axes = 1:2, col.ind.sup = col.ind.sup, label = label, col.quali = col.quali, ellipse = el,
+             title = title, invisible = invisible, new.plot = new.plot,graph.type=graph.type)
+	  par(col.lab="black")
+      mtext(paste0("Dim ", axes[1], " (", format(res.pca$eig[1,2], nsmall = 2, digits = 2), "%)"), side=1, line=3)
+      mtext(paste0("Dim ", axes[2], " (", format(res.pca$eig[2,2], nsmall = 2, digits = 2), "%)"), side=2, line=3)
+	 # } else{
+       # p <- FactoMineR::plot.PCA(res.pca, axes = 1:2, label = label, col.quali = col.quali, 
+              # title = title, invisible = invisible, new.plot = new.plot,graph.type=graph.type)
+	}
+#	return(p)
   }
   
   res <- x
-  if (!inherits(res, "MIMCA")) 
-    stop("non convenient data")
+  if (!inherits(res, "MIMCA")) stop("non convenient data")
+  graph.type <- "classic" ## graph too long with ggplot
+  graph.type <- match.arg(graph.type[1],c("ggplot","classic"))
+  graph <- list()
   ncp <- max(axes)
   reference <- FactoMineR::MCA(res$call$X, graph = FALSE, ncp = ncp,tab.disj=res$res.imputeMCA)
   res.dim  <- res$call$X
@@ -90,10 +98,8 @@ plot.MIMCA<-function (x, choice = "all", axes = c(1, 2), new.plot = TRUE,
   for (i in 1:length(res$res.MI)){
     rec.mca <- res$res.MI[[i]]
     acmfin <- FactoMineR::MCA(res$call$X, graph = FALSE, ncp = ncp,tab.disj = res$call$tab.disj[,,i])
-    tourne <- procrustes(acmfin$ind$coord[, 1:ncp],
-                         reference$ind$coord[,1:ncp],
-                         orthogonal = TRUE, translate = TRUE,
-                         magnify = TRUE)$rmat
+    tourne <- procrustes(acmfin$ind$coord[, 1:ncp], reference$ind$coord[,1:ncp],
+                         orthogonal = TRUE, translate = TRUE, magnify = TRUE)$rmat
     colnames(tourne) <- colnames(res.procrustes)
     res.procrustes <- rbind.data.frame(res.procrustes, tourne)
     res.dim <- cbind.data.frame(res.dim, acmfin$ind$coord[,1:ncp])
@@ -106,15 +112,19 @@ plot.MIMCA<-function (x, choice = "all", axes = c(1, 2), new.plot = TRUE,
   },don.na=res$call$X,axes= axes,G=res$res.imputeMCA,res.mca=reference)
   coordinsup<-lapply(coordinsup,"[[",1)
   
-  if (!is.null(main)) 
-    title <- main
+  if (!is.null(main)) title <- main
   if ((choice == "all") | (choice == "ind.proc")) {
     if ((new.plot)&!nzchar(Sys.getenv("RSTUDIO_USER_IDENTITY"))) dev.new()
     oo = FactoMineR::PCA(res.procrustes, ind.sup = c((nrow(res$call$X) + 1):nrow(res.procrustes)), scale.unit = FALSE, graph = FALSE)
     oo$eig = reference$eig
-    el = coord.ellipse(cbind.data.frame(as.factor(rep(rownames(res$call$X), res$call$nboot)), oo$ind.sup$coord[, axes]), level.conf = level.conf)
     if (is.null(main)){title = "Multiple imputation using Procrustes"}
-    plot(oo, axes = axes, col.ind.sup = rep(1:nrow(res$call$X), res$call$nboot), label = "ind", ellipse = el, col.quali = "black", title = title, invisible = "ind.sup", new.plot = FALSE,graph.type="classic")
+    if (graph.type=="classic"){
+ 	  el = coord.ellipse(cbind.data.frame(as.factor(rep(rownames(res$call$X), res$call$nboot)), oo$ind.sup$coord[, axes]), level.conf = level.conf)
+	  plot(oo, axes = axes, col.ind.sup = rep(1:nrow(res$call$X), res$call$nboot), label = "ind", ellipse = el, col.quali = 1, title = title, invisible = "ind.sup", new.plot = FALSE,graph.type=graph.type)
+#    } else {
+#	  graph$PlotIndProc <- plot(reference, axes = axes, label = "ind", invisible=c("quali","quali.sup"), title = title, new.plot = FALSE)
+#	  graph$PlotIndProc <- graph$PlotIndProc + stat_ellipse(aes(x=oo$ind.sup$coord[, axes[1]],y=oo$ind.sup$coord[, axes[2]],color=as.factor(rep(rownames(res$call$X), res$call$nboot))))
+	}
   }
   if ((choice == "all") | (choice == "dim")) {
     if ((new.plot) & !nzchar(Sys.getenv("RSTUDIO_USER_IDENTITY"))) {dev.new()}
@@ -122,7 +132,7 @@ plot.MIMCA<-function (x, choice = "all", axes = c(1, 2), new.plot = TRUE,
     ooo = FactoMineR::MCA(res.dim, quanti.sup = (ncol(res$call$X) + 1):ncol(res.dim), graph = FALSE,tab.disj = cbind(res$res.imputeMCA,res.dim[,-(1:ncol(res$call$X))]),ncp = ncp)
     ooo$eig = reference$eig
     if (is.null(main)){title <- "Projection of the Principal Components"}
-    plot(ooo, choi = "quanti.sup", axes = axes, title = title, label = "none", new.plot = FALSE, graph.type="classic")
+    graph$plotDim <- plot(ooo, choi = "quanti.sup", axes = axes, title = title, label = "none", new.plot = FALSE, graph.type=graph.type)
   }
   
   if ((choice == "all") | (choice == "ind.supp")) {
@@ -135,13 +145,16 @@ plot.MIMCA<-function (x, choice = "all", axes = c(1, 2), new.plot = TRUE,
     oo$eig = reference$eig[axes,]
     oo$var<-lapply(reference$var,"[",,axes)
     
-    el = coord.ellipse(cbind.data.frame(
-      as.factor(rep(rownames(res$call$X), res$call$nboot)),
-      oo$ind.sup$coord), level.conf = level.conf)
+    if (graph.type=="classic"){
+	  el = coord.ellipse(cbind.data.frame(as.factor(rep(rownames(res$call$X), res$call$nboot)),oo$ind.sup$coord), level.conf = level.conf)
     
-    plot.tmp(oo, axes = axes, col.ind.sup = rep(1:nrow(res$call$X), res$call$nboot),
-             label = "ind", col.quali = "black", ellipse = el,
-         title = title, invisible = c("ind.sup","var"), new.plot = FALSE)
+      plot.tmp(oo, axes = axes, col.ind.sup = rep(1:nrow(res$call$X), res$call$nboot),
+        label = "ind", col.quali = 1, ellipse = el, title = title, invisible = c("ind.sup","var"), new.plot = FALSE, graph.type=graph.type)
+    # } else {
+	  # graph$plotIndSupp <- plot.tmp(oo, axes = axes,  label = "ind", col.quali = 1, title = title, invisible = c("ind.sup","var"), new.plot = FALSE, graph.type=graph.type)
+	  # graph$plotIndSupp <- graph$plotIndSupp + stat_ellipse(aes(x=oo$ind.sup$coord[, axes[1]],y=oo$ind.sup$coord[, axes[2]],color=as.factor(rep(rownames(res$call$X), res$call$nboot))))
+	}
+
   }
   
   
@@ -168,9 +181,9 @@ plot.MIMCA<-function (x, choice = "all", axes = c(1, 2), new.plot = TRUE,
       as.factor(rep(rownames(reference$var$coord), res$call$nboot)),
       oo$ind.sup$coord[, 1:2]), level.conf = level.conf)
     
-    plot.tmp(oo, axes = axes, col.ind.sup = rep(1:nrow(reference$var$coord), res$call$nboot),
-             label = "ind", col.quali = "black", ellipse = el,title = title,
-             invisible = c("ind.sup","var"), new.plot = FALSE)
+    # graph$PlotModSupp <- plot.tmp(oo, axes = axes, col.ind.sup = rep(1:nrow(reference$var$coord), res$call$nboot),
+         # label = "ind", col.quali = 1, ellipse = el,title = title, invisible = c("ind.sup","var"), new.plot = FALSE)
   }
+  # if (graph.type=="ggplot")	return(graph)
 }
 
