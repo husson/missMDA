@@ -100,7 +100,7 @@ nbiter <- 0
 while (continue){
 
   nbiter <- nbiter+1
-  if (length(quali.sup) >0) tab.disj.comp[,TabDisjMod[TabDisjMod!="quanti.sup"]=="quali.sup"] <- tab.disj.comp[,TabDisjMod[TabDisjMod!="quanti.sup"]=="quali.sup"] * 1e-08
+  if (length(quali.sup) >0) tab.disj.comp[,TabDisjMod[TabDisjMod!="quanti.sup"]=="quali.sup"] <- tab.disj.comp[,TabDisjMod[TabDisjMod!="quanti.sup"]=="quali.sup"] * 1e-8
   M <- apply(tab.disj.comp, 2, moy.p,row.w)/ncol(don)
   if (any(M<0)) stop(paste("The algorithm fails to converge. Choose a number of components (ncp) less or equal than ",ncp-1," or a number of iterations (maxiter) less or equal than ",maxiter-1,sep=""))
 
@@ -110,9 +110,10 @@ while (continue){
 
   svd.Zscale <- FactoMineR::svd.triplet(Zscale,row.w=row.w,ncp=ncp)
   moyeig <- 0
-  if (length(quanti.sup)+length(quali.sup)>0) NcolZscale <- length(TabDisjMod=="var")
+  if (length(quanti.sup)+length(quali.sup)>0) NcolZscale <- sum(TabDisjMod=="var")
   else NcolZscale <- ncol(Zscale)
-  if (nrow(don)>(NcolZscale-ncol(don))) moyeig <- mean(svd.Zscale$vs[-c(1:ncp,(NcolZscale-ncol(don)-length(quali.sup)- length(quanti.sup)+1):NcolZscale)]^2)
+#  if (nrow(don)>(NcolZscale-ncol(don))) moyeig <- mean(svd.Zscale$vs[-c(1:ncp,(NcolZscale-ncol(don)-length(quali.sup)- length(quanti.sup)+1):NcolZscale)]^2)
+  if (nrow(don)>(NcolZscale-ncol(don))) moyeig <- mean(svd.Zscale$vs[-c(1:ncp,(NcolZscale-(ncol(don)-length(quali.sup)-length(quanti.sup))+1):NcolZscale)]^2)
   else moyeig <- mean(svd.Zscale$vs[-c(1:ncp,NcolZscale:length(svd.Zscale$vs))]^2)
   moyeig <- min(moyeig*coeff.ridge,svd.Zscale$vs[ncp+1]^2)
   if (method=="em") moyeig <-0
