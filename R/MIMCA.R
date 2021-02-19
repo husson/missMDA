@@ -40,16 +40,27 @@ MIMCA<-function(X,nboot=100,ncp,coeff.ridge=1,threshold = 1e-06, maxiter = 1000,
     }
     return(don.imp=Donres)
   }
+  
   temp<-if(coeff.ridge==1){"regularized"}else if(coeff.ridge==0){"EM"}else{paste("coeff.ridge=",coeff.ridge)}
   if(verbose){cat("Multiple Imputation using",temp,"MCA using",nboot,"imputed arrays","\n")}
   X <- as.data.frame(X)
+
+  is.quali <- which(!unlist(lapply(X,is.numeric)))
+  X[,is.quali] <- lapply(X[,is.quali,drop=FALSE],as.factor)
+  X <- droplevels(X)
+  OneCat <- sapply(X,nlevels)==1
+  if (sum(OneCat)>0){
+    if (sum(OneCat)==1) warning("The following variable is constant and has been suppressed form the analysis: ",names(which(OneCat>0)))
+    if (sum(OneCat)>1) warning("The following variable are constant and have been suppressed form the analysis: ",paste(names(which(OneCat>0)),collapse=", "))
+	X <- X[,-which(OneCat)]
+	if (ncol(X)<=1) stop("No sufficient variables have 2 categories or more")
+  }
+
   n<-nrow(X)
   Boot<-matrix(sample(1:n,size=nboot*n,replace=T),n,nboot)
   Weight<-matrix(1/(n*1000),n,nboot,dimnames=list(1:n,paste("nboot=",1:nboot,sep="")))
   Boot.table<-apply(Boot,2,table)
-  for(i in 1:nboot){
-    Weight[names(Boot.table[[i]]),i]<-Boot.table[[i]]
-  }
+  for(i in 1:nboot) Weight[names(Boot.table[[i]]),i]<-Boot.table[[i]]
   Weight<-sweep(Weight,2,STATS=colSums(Weight),FUN="/")
   Weight<-as.data.frame(Weight)
   res.imp<-mapply(Weight,FUN=imputeMCA.print,MoreArgs=list(don=X,ncp=ncp,coeff.ridge= coeff.ridge,method="Regularized",threshold = threshold, maxiter = maxiter,verbose=verbose),printm=as.character(1:nboot),SIMPLIFY=FALSE)
