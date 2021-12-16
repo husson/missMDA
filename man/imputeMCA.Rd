@@ -45,7 +45,7 @@ Francois Husson  \email{husson@agrocampus-ouest.fr} and Julie Josse  \email{juli
 }
 
 \references{Josse, J., Chavent, M., Liquet, B. and Husson, F. (2010). Handling missing values with Regularized Iterative Multiple Correspondence Analysis, Journal of Clcassification, 29 (1), pp. 91-116.\cr
-Josse, J. and Husson, F. missMDA (2016). A Package for Handling Missing Values in Multivariate Data Analysis. Journal of Statistical Software, 70 (1), pp 1-31 <doi:10.18637/jss.v070.i01>}
+Josse, J. and Husson, F. missMDA (2016). A Package for Handling Missing Values in Multivariate Data Analysis. Journal of Statistical Software, 70 (1), pp 1-31 \doi{10.18637/jss.v070.i01}}
 
 \seealso{\code{\link{estim_ncpMCA}},\cr
 \href{https://www.youtube.com/watch?v=_Wa6R4PM9dY&list=PLnZgp6epRBbQzxFnQrcxg09kRt-PA66T_&index=1}{Video showing how to perform MCA on an incomplete dataset}}
@@ -63,6 +63,7 @@ res.impute <- imputeMCA(vnf, ncp=4)
 
 ## The imputed indicator matrix can be used as an input of the MCA function of the
 ## FactoMineR package to perform the MCA on the incomplete data vnf 
+require(FactoMineR)
 res.mca <- MCA(vnf,tab.disj=res.impute$tab.disj) 
 
 ## With supplementary variables (var 11 to 14), impute the active ones

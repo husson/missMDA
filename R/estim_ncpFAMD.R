@@ -1,32 +1,33 @@
 estim_ncpFAMD<-function (don, ncp.min = 0, ncp.max = 5, method = c("Regularized", "EM"), 
     method.cv = c("Kfold", "loo"), nbsim = 100, pNA = 0.05,ind.sup=NULL,sup.var=NULL,
-	threshold = 1e-04, verbose=TRUE) 
+	threshold = 1e-04, verbose=TRUE, maxiter=1000) 
 {
-  tab.disjonctif.NA <- function(tab) {
-    tab <- as.data.frame(tab)
-    modalite.disjonctif <- function(i) {
-      moda <- tab[, i]
-      nom <- names(tab)[i]
-      n <- length(moda)
-      moda <- as.factor(moda)
-      x <- matrix(0, n, length(levels(moda)))
-      ind <- (1:n) + n * (unclass(moda) - 1)
-      indNA <- which(is.na(ind))
-      x[(1:n) + n * (unclass(moda) - 1)] <- 1
-      x[indNA, ] <- NA
-      if ((ncol(tab) != 1) & (levels(moda)[1] %in% c(1:nlevels(moda), "n", "N", "y", "Y"))) 
-        dimnames(x) <- list(row.names(tab), paste(nom, levels(moda), sep = "."))
-      else dimnames(x) <- list(row.names(tab), levels(moda))
-      return(x)
-    }
-    if (ncol(tab) == 1) 
-      res <- modalite.disjonctif(1)
-    else {
-      res <- lapply(1:ncol(tab), modalite.disjonctif)
-      res <- as.matrix(data.frame(res, check.names = FALSE))
-    }
-    return(res)
-  }
+  # tab.disjonctif.NA <- function(tab) {
+    # tab <- as.data.frame(tab)
+    # modalite.disjonctif <- function(i) {
+      # moda <- tab[, i]
+	  # if (is.numeric(moda)) return(moda)
+      # nom <- names(tab)[i]
+      # n <- length(moda)
+      # moda <- as.factor(moda)
+      # x <- matrix(0, n, length(levels(moda)))
+      # ind <- (1:n) + n * (unclass(moda) - 1)
+      # indNA <- which(is.na(ind))
+      # x[(1:n) + n * (unclass(moda) - 1)] <- 1
+      # x[indNA, ] <- NA
+      # if ((ncol(tab) != 1) & (levels(moda)[1] %in% c(1:nlevels(moda), "n", "N", "y", "Y"))) 
+        # dimnames(x) <- list(row.names(tab), paste(nom, levels(moda), sep = "."))
+      # else dimnames(x) <- list(row.names(tab), levels(moda))
+      # return(x)
+    # }
+    # if (ncol(tab) == 1) 
+      # res <- modalite.disjonctif(1)
+    # else {
+      # res <- lapply(1:ncol(tab), modalite.disjonctif)
+      # res <- as.matrix(data.frame(res, check.names = FALSE))
+    # }
+    # return(res)
+  # }
   
   # from missForest package
   prodna<-function (x, noNA){
@@ -55,7 +56,7 @@ if (!is.null(sup.var)) don <- don[,-sup.var]
   #suppression niveaux non pris
   jeu <- droplevels(jeu)
   
-  vrai.tab = cbind(jeu[,1:nbquanti,drop=F],tab.disjonctif.NA(jeu[,(nbquanti+1):ncol(jeu),drop=F]))
+  vrai.tab = cbind(jeu[,1:nbquanti,drop=F],tab.disjonctif(jeu[,(nbquanti+1):ncol(jeu),drop=F]))
   if (method.cv == "kfold"){
     res = matrix(NA, ncp.max - ncp.min + 1, nbsim)
     if(verbose) pb <- txtProgressBar(min=1/nbsim*100, max=100,style=3)
@@ -67,9 +68,9 @@ if (!is.null(sup.var)) don <- don[,-sup.var]
       }
       
       for (nbaxes in ncp.min:ncp.max) {
-        tab.disj.comp <- imputeFAMD(as.data.frame(jeuNA), ncp = nbaxes, method = method, threshold = threshold)$tab.disj
+        tab.disj.comp <- imputeFAMD(as.data.frame(jeuNA), ncp = nbaxes, method = method, threshold = threshold, maxiter=maxiter)$tab.disj
         if (sum(is.na(jeuNA)) != sum(is.na(jeu))){ 
-          res[nbaxes - ncp.min + 1, sim] <- sum((tab.disj.comp - vrai.tab)^2, na.rm = TRUE)/(sum(is.na(tab.disjonctif.NA(jeuNA))) - sum(is.na(tab.disjonctif.NA(jeu))))
+          res[nbaxes - ncp.min + 1, sim] <- sum((tab.disj.comp - vrai.tab)^2, na.rm = TRUE)/(sum(is.na(tab.disjonctif(jeuNA))) - sum(is.na(tab.disjonctif(jeu))))
         }
       }
       if(verbose) setTxtProgressBar(pb, sim/nbsim*100)
@@ -94,7 +95,7 @@ if (!is.null(sup.var)) don <- don[,-sup.var]
             jeuNA[i, j] <- NA
             if(!any(summary(jeuNA[,j]==0))){
               tab.disj.hat[i, (cumsum(col.in.indicator)[j] +1):(cumsum(col.in.indicator)[j + 1])] <- imputeFAMD(as.data.frame(jeuNA), 
-                   ncp = nbaxes, method = method, threshold = threshold)$tab.disj[i, 
+                   ncp = nbaxes, method = method, threshold = threshold, maxiter=maxiter)$tab.disj[i, 
                    (cumsum(col.in.indicator)[j] + 1):(cumsum(col.in.indicator)[j + 1])]
 	       }
           }

@@ -2,7 +2,7 @@ export(estim_ncpFAMD,estim_ncpPCA,estim_ncpMCA,estim_ncpMultilevel,imputeCA,impu
 import(doParallel)
 import(foreach)
 import(parallel)
-importFrom(FactoMineR,PCA,MCA,svd.triplet,coord.ellipse,reconst,tab.disjonctif.prop,plot.PCA)
+importFrom(FactoMineR,PCA,MCA,svd.triplet,coord.ellipse,reconst,tab.disjonctif,tab.disjonctif.prop,plot.PCA)
 importFrom(ggplot2,aes,geom_point,guides,guide_legend)
 importFrom(graphics,plot,points,abline,segments,legend,par,mtext)
 importFrom(grDevices,dev.new,heat.colors)

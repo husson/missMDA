@@ -11,44 +11,43 @@ imputeMFA<-function (X, group, ncp = 2, type = rep("s", length(group)),
     ec <- function(V, poids) {
       res <- sqrt(sum(V^2 * poids, na.rm = TRUE)/sum(poids[!is.na(V)]))
     }
-    tab.disjonctif.NA <- function(tab) {
-      tab <- as.data.frame(tab)
-      modalite.disjonctif <- function(i) {
-        moda <- tab[, i]
-        nom <- names(tab)[i]
-        n <- length(moda)
-        moda <- as.factor(moda)
-        x <- matrix(0, n, length(levels(moda)))
-        ind <- (1:n) + n * (unclass(moda) - 1)
-        indNA <- which(is.na(ind))
-        x[(1:n) + n * (unclass(moda) - 1)] <- 1
-        x[indNA, ] <- NA
-        if ((ncol(tab) != 1) & (levels(moda)[1] %in% 
-                                  c(1:nlevels(moda), "n", "N", "y", "Y"))) 
-          dimnames(x) <- list(row.names(tab), paste(nom, 
-                                                    levels(moda), sep = "."))
-        else dimnames(x) <- list(row.names(tab), levels(moda))
-        return(x)
-      }
-      if (ncol(tab) == 1) 
-        res <- modalite.disjonctif(1)
-      else {
-        res <- lapply(1:ncol(tab), modalite.disjonctif)
-        res <- as.matrix(data.frame(res, check.names = FALSE))
-      }
-      return(res)
-    }
+    # tab.disjonctif.NA <- function(tab) {
+      # tab <- as.data.frame(tab)
+      # modalite.disjonctif <- function(i) {
+        # moda <- tab[, i]
+        # if (is.numeric(moda)) return(moda)
+        # nom <- names(tab)[i]
+        # n <- length(moda)
+        # moda <- as.factor(moda)
+        # x <- matrix(0, n, length(levels(moda)))
+        # ind <- (1:n) + n * (unclass(moda) - 1)
+        # indNA <- which(is.na(ind))
+        # x[(1:n) + n * (unclass(moda) - 1)] <- 1
+        # x[indNA, ] <- NA
+        # if ((ncol(tab) != 1) & (levels(moda)[1] %in% 
+                                  # c(1:nlevels(moda), "n", "N", "y", "Y"))) 
+          # dimnames(x) <- list(row.names(tab), paste(nom, 
+                                                    # levels(moda), sep = "."))
+        # else dimnames(x) <- list(row.names(tab), levels(moda))
+        # return(x)
+      # }
+      # if (ncol(tab) == 1) 
+        # res <- modalite.disjonctif(1)
+      # else {
+        # res <- lapply(1:ncol(tab), modalite.disjonctif)
+        # res <- as.matrix(data.frame(res, check.names = FALSE))
+      # }
+      # return(res)
+    # }
     find.category <- function(X, tabdisj) {
       nbdummy <- rep(1, ncol(X))
       is.quali <- which(!unlist(lapply(X, is.numeric)))
-      nbdummy[is.quali] <- unlist(lapply(X[, is.quali, 
-                                           drop = FALSE], nlevels))
+      nbdummy[is.quali] <- unlist(lapply(X[, is.quali, drop = FALSE], nlevels))
       vec = c(0, cumsum(nbdummy))
       Xres <- X
       for (i in 1:ncol(X)) {
         if (i %in% is.quali) 
-          Xres[, i] <- as.factor(levels(X[, i])[apply(tabdisj[, 
-                                                              (vec[i] + 1):vec[i + 1]], 1, which.max)])
+          Xres[, i] <- as.factor(levels(X[, i])[apply(tabdisj[,(vec[i] + 1):vec[i + 1]], 1, which.max)])
         else Xres[, i] <- tabdisj[, vec[i] + 1]
       }
       return(Xres)
@@ -171,15 +170,20 @@ imputeMFA<-function (X, group, ncp = 2, type = rep("s", length(group)),
       }
       if (type[g] == "n") {
         tab.disj = tab.disjonctif.prop(aux.base, seed, row.w = row.w)
+		# print(cbind.data.frame(row.w,tab.disjonctif(aux.base),tab.disj))
+		# print(summary(tab.disj))
         tab.disj.comp[[g]] = tab.disj
         group.mod[g] <- ncol(tab.disj)
         MM[[g]] = apply(tab.disj, 2, moy.p, row.w)/ncol(aux.base)
+		# print(MM[[g]])
         Z = t(t(tab.disj)/apply(tab.disj, 2, moy.p, row.w))
+		# print(summary(Z))
+		# if (any(is.nan(tab.disj))) write.table(cbind.data.frame(row.w,tab.disjonctif(aux.base),tab.disj),file="./err.csv")
         Z = t(t(Z) - apply(Z, 2, moy.p, row.w))
         Zscale = t(t(Z) * sqrt(MM[[g]]))
         ponderation[g] <- FactoMineR::svd.triplet(Zscale, row.w = row.w)$vs[1]
         Xhat <- cbind.data.frame(Xhat, Zscale/ponderation[g])
-        Xhat2 <- cbind.data.frame(Xhat2, as.data.frame(tab.disjonctif.NA(aux.base)))
+        Xhat2 <- cbind.data.frame(Xhat2, as.data.frame(tab.disjonctif(aux.base)))
       }
     }
     ind.var <- vector(mode = "list", length = length(group))
@@ -191,6 +195,10 @@ imputeMFA<-function (X, group, ncp = 2, type = rep("s", length(group)),
     missing <- which(is.na(as.matrix(Xhat2)))
     nb.iter <- 1
     old <- Inf
+	nrX <- nrow(Xhat)
+	ncX <- sum(group.mod)-sum(group[type=="n"])
+	if (length(num.group.sup)>0) ncX <- ncX - (sum(group.mod[num.group.sup]) - sum(group[num.group.sup][type[num.group.sup]=="n"]))
+
     while (nb.iter > 0) {
       for (g in 1:length(group)) {
         if (g == 1) aux.base <- Xhat[, 1:group.mod[1], drop = FALSE]
@@ -215,10 +223,11 @@ imputeMFA<-function (X, group, ncp = 2, type = rep("s", length(group)),
           tab.disj = t(t(tab.disj) * apply(tab.disj.comp[[g]], 2, moy.p, row.w))
           tab.disj.comp[[g]] = tab.disj
           MM[[g]] = apply(tab.disj, 2, moy.p, row.w)/ncol(aux.base)
-          if (any(MM[[g]] < 0)) 
+          if (any(MM[[g]] < 0)) {
             stop(paste("The algorithm fails to converge. Choose a number of components (ncp) less or equal than ", 
                        ncp - 1, " or a number of iterations (maxiter) less or equal than ", 
                        maxiter - 1, sep = ""))
+          }
           Z = t(t(tab.disj)/apply(tab.disj, 2, moy.p, row.w))
           Z = t(t(Z) - apply(Z, 2, moy.p, row.w))
           aux.base = t(t(Z) * sqrt(MM[[g]]))
@@ -234,8 +243,11 @@ imputeMFA<-function (X, group, ncp = 2, type = rep("s", length(group)),
 		}
 	  }
       svd.res <- FactoMineR::svd.triplet(Xhat, row.w = row.w, ncp = ncp)
-      if (length(num.group.sup)>0) sigma2 <- mean(svd.res$vs[-c(1:ncp,(ncol(Xhat)-sum(group.mod[num.group.sup])+1):ncol(Xhat))]^2)
-	  else sigma2 <- mean(svd.res$vs[-c(1:ncp)]^2)
+## New calcul for sigma2
+      # if (length(num.group.sup)>0) sigma2 <- mean(svd.res$vs[-c(1:ncp,(ncol(Xhat)-sum(group.mod[num.group.sup])+1):ncol(Xhat))]^2)
+	  # else sigma2 <- mean(svd.res$vs[-c(1:ncp)]^2)
+	  if (length(num.group.sup)>0) sigma2  <- nrX*ncX/min(ncX,nrX-1)* sum((svd.res$vs[-c(1:ncp)]^2)/((nrX-1) * ncX - (nrX-1) * ncp - ncX * ncp + ncp^2))
+	  else sigma2  <- nrX*ncX/min(ncX,nrX-1)* sum((svd.res$vs[-c(1:ncp)]^2)/((nrX-1) * ncX - (nrX-1) * ncp - ncX * ncp + ncp^2))
       sigma2 <- min(sigma2 * coeff.ridge, svd.res$vs[ncp + 1]^2)
       if (method == "em") sigma2 <- 0
       lambda.shrinked = (svd.res$vs[1:ncp]^2 - sigma2)/svd.res$vs[1:ncp]

@@ -2,31 +2,31 @@ estim_ncpMultilevel <-function (X,  ifac=1, ncpW.min = 1, ncpW.max = 5, ncpB.min
          scale = TRUE, nbsim = 100, pNA = 0.05, threshold = 1e-04, nb.cores =NULL, verbose = TRUE) 
 {
   
-  tab.disjonctif.NA <- function(tab) {
-    tab <- as.data.frame(tab)
-    modalite.disjonctif <- function(i) {
-      moda <- tab[, i]
-      nom <- names(tab)[i]
-      n <- length(moda)
-      moda <- as.factor(moda)
-      x <- matrix(0, n, length(levels(moda)))
-      ind <- (1:n) + n * (unclass(moda) - 1)
-      indNA <- which(is.na(ind))
-      x[(1:n) + n * (unclass(moda) - 1)] <- 1
-      x[indNA, ] <- NA
-      if ((ncol(tab) != 1) & (levels(moda)[1] %in% c(1:nlevels(moda), "n", "N", "y", "Y"))) 
-        dimnames(x) <- list(row.names(tab), paste(nom, levels(moda), sep = "."))
-      else dimnames(x) <- list(row.names(tab), levels(moda))
-      return(x)
-    }
-    if (ncol(tab) == 1) 
-      res <- modalite.disjonctif(1)
-    else {
-      res <- lapply(1:ncol(tab), modalite.disjonctif)
-      res <- as.matrix(data.frame(res, check.names = FALSE))
-    }
-    return(res)
-  }
+  # tab.disjonctif.NA <- function(tab) {
+    # tab <- as.data.frame(tab)
+    # modalite.disjonctif <- function(i) {
+      # moda <- tab[, i]
+      # nom <- names(tab)[i]
+      # n <- length(moda)
+      # moda <- as.factor(moda)
+      # x <- matrix(0, n, length(levels(moda)))
+      # ind <- (1:n) + n * (unclass(moda) - 1)
+      # indNA <- which(is.na(ind))
+      # x[(1:n) + n * (unclass(moda) - 1)] <- 1
+      # x[indNA, ] <- NA
+      # if ((ncol(tab) != 1) & (levels(moda)[1] %in% c(1:nlevels(moda), "n", "N", "y", "Y"))) 
+        # dimnames(x) <- list(row.names(tab), paste(nom, levels(moda), sep = "."))
+      # else dimnames(x) <- list(row.names(tab), levels(moda))
+      # return(x)
+    # }
+    # if (ncol(tab) == 1) 
+      # res <- modalite.disjonctif(1)
+    # else {
+      # res <- lapply(1:ncol(tab), modalite.disjonctif)
+      # res <- as.matrix(data.frame(res, check.names = FALSE))
+    # }
+    # return(res)
+  # }
   prodna<-function (x, noNA){
     n <- nrow(x)
     p <- ncol(x)
@@ -45,7 +45,7 @@ estim_ncpMultilevel <-function (X,  ifac=1, ncpW.min = 1, ncpW.max = 5, ncpB.min
   nbquanti<-sum(sapply(X,is.numeric))
   tab.jeu <- NULL
   if (nbquanti>0) tab.jeu <- sapply(jeu[,1:nbquanti,drop=FALSE],as.double)
-  if (nbquanti<ncol(jeu)) tab.jeu <- cbind.data.frame(tab.jeu,tab.disjonctif.NA(jeu[,(nbquanti+1):ncol(jeu),drop=FALSE]))
+  if (nbquanti<ncol(jeu)) tab.jeu <- cbind.data.frame(tab.jeu,tab.disjonctif(jeu[,(nbquanti+1):ncol(jeu),drop=FALSE]))
 
   opts=NULL
   if (verbose){

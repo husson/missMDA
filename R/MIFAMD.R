@@ -13,34 +13,34 @@ function(X,
   #intern functions
   
   estim.sigma2<-function(Xquanti,Xquali,M,Zhat,ncp,WW,D){
-    tab.disjonctif.NA <- function(tab) {
-      if(ncol(tab)==0){return(NULL)}
-      tab <- as.data.frame(tab)
-      modalite.disjonctif <- function(i) {
-        moda <- tab[, i]
-        nom <- names(tab)[i]
-        n <- length(moda)
-        moda <- as.factor(moda)
-        x <- matrix(0, n, length(levels(moda)))
-        ind <- (1:n) + n * (unclass(moda) - 1)
-        indNA <- which(is.na(ind))
-        x[(1:n) + n * (unclass(moda) - 1)] <- 1
-        x[indNA, ] <- NA
-        if ((ncol(tab) != 1) & (levels(moda)[1] %in% c(1:nlevels(moda), 
-                                                       "n", "N", "y", "Y"))) 
-          dimnames(x) <- list(row.names(tab), paste(nom, 
-                                                    levels(moda), sep = "."))
-        else dimnames(x) <- list(row.names(tab), levels(moda))
-        return(x)
-      }
-      if (ncol(tab) == 1) 
-        res <- modalite.disjonctif(1)
-      else {
-        res <- lapply(1:ncol(tab), modalite.disjonctif)
-        res <- as.matrix(data.frame(res, check.names = FALSE))
-      }
-      return(res)
-    }
+    # tab.disjonctif.NA <- function(tab) {
+      # if(ncol(tab)==0){return(NULL)}
+      # tab <- as.data.frame(tab)
+      # modalite.disjonctif <- function(i) {
+        # moda <- tab[, i]
+        # nom <- names(tab)[i]
+        # n <- length(moda)
+        # moda <- as.factor(moda)
+        # x <- matrix(0, n, length(levels(moda)))
+        # ind <- (1:n) + n * (unclass(moda) - 1)
+        # indNA <- which(is.na(ind))
+        # x[(1:n) + n * (unclass(moda) - 1)] <- 1
+        # x[indNA, ] <- NA
+        # if ((ncol(tab) != 1) & (levels(moda)[1] %in% c(1:nlevels(moda), 
+                                                       # "n", "N", "y", "Y"))) 
+          # dimnames(x) <- list(row.names(tab), paste(nom, 
+                                                    # levels(moda), sep = "."))
+        # else dimnames(x) <- list(row.names(tab), levels(moda))
+        # return(x)
+      # }
+      # if (ncol(tab) == 1) 
+        # res <- modalite.disjonctif(1)
+      # else {
+        # res <- lapply(1:ncol(tab), modalite.disjonctif)
+        # res <- as.matrix(data.frame(res, check.names = FALSE))
+      # }
+      # return(res)
+    # }
     
     reconst.FAMD<-function(xxquanti,xxquali,M=NULL,D=NULL,ncp,coeff.ridge=1,method="em"){
       zz<-cbind.data.frame(xxquanti,xxquali)
@@ -75,7 +75,7 @@ function(X,
     nb.obs.quanti<-sum(WW[,seq(ncol(Xquanti))])
     Zhat2<-reconst.FAMD(Zhat[,seq(ncol(Xquanti))],Zhat[,-seq(ncol(Xquanti))],ncp=ncp,D = D,M=M)
     Residu<-(Zhat-Zhat2$zzhat)%*%diag(M)^{1/2}
-    Residu[is.na(cbind.data.frame(Xquanti,tab.disjonctif.NA(Xquali)))]<-0
+    Residu[is.na(cbind.data.frame(Xquanti,tab.disjonctif(Xquali)))]<-0
     sigma2<-sum(WW[,seq(ncol(Xquanti))]*((Residu[,seq(ncol(Xquanti))])^2))/(nb.obs.quanti-(ncol(Xquanti)+ncp*(sum(D)-1)+ncol(Xquanti)-ncp))
     return(sigma2)
   }
@@ -170,7 +170,7 @@ function(X,
     donimp[,which(classvar=="numeric")]<-res.imp$tab.disj[,seq(length(res.imp$quanti.act))]#les quanti active sont les premières variables du tdc
     missing.quanti <-is.na(don[,res.imp$quanti.act])
     res.MI<-vector("list",length=nboot);names(res.MI)<-paste("nboot=",1:nboot,sep="")
-    for(i in seq(nboot)){
+    for(i in seq(nboot)){ 
       if(verbose){cat(paste(i, "...", sep = ""))}
       donimp.tmp<-donimp
       if(any("factor"%in% classvar)){

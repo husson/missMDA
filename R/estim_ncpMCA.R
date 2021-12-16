@@ -1,32 +1,30 @@
 estim_ncpMCA <- function(don,ncp.min=0,ncp.max=5,method=c("Regularized","EM"),method.cv=c("Kfold","loo"),nbsim=100,pNA=0.05,ind.sup=NULL,quanti.sup=NULL,quali.sup=NULL,threshold=1e-4,verbose=TRUE){
 
-#### Debut tab.disjonctif.NA
-tab.disjonctif.NA<-function (tab) {
-    tab <- as.data.frame(tab)
-    modalite.disjonctif <- function(i) {
-        moda <- tab[, i]
-        nom <- names(tab)[i]
-        n <- length(moda)
-        moda <- as.factor(moda)
-        x <- matrix(0, n, length(levels(moda)))
-	      ind<-(1:n) + n * (unclass(moda) - 1)
-	      indNA<-which(is.na(ind))
+# tab.disjonctif.NA<-function (tab) {
+    # tab <- as.data.frame(tab)
+    # modalite.disjonctif <- function(i) {
+        # moda <- tab[, i]
+        # nom <- names(tab)[i]
+        # n <- length(moda)
+        # moda <- as.factor(moda)
+        # x <- matrix(0, n, length(levels(moda)))
+	      # ind<-(1:n) + n * (unclass(moda) - 1)
+	      # indNA<-which(is.na(ind))
 		
-        x[(1:n) + n * (unclass(moda) - 1)] <- 1
-        x[indNA,]<-NA 
-	  if ((ncol(tab) != 1) & (levels(moda)[1] %in% c(1:nlevels(moda), "n", "N", "y", "Y"))) dimnames(x) <- list(row.names(tab), paste(nom, levels(moda), sep = "."))
-        else dimnames(x) <- list(row.names(tab), levels(moda))
-        return(x)
-    }
-    if (ncol(tab) == 1) 
-        res <- modalite.disjonctif(1)
-    else {
-        res <- lapply(1:ncol(tab), modalite.disjonctif)
-        res <- as.matrix(data.frame(res, check.names = FALSE))
-    }
-    return(res)
-}
-#### Fin tab.disjonctif.NA
+        # x[(1:n) + n * (unclass(moda) - 1)] <- 1
+        # x[indNA,]<-NA 
+	  # if ((ncol(tab) != 1) & (levels(moda)[1] %in% c(1:nlevels(moda), "n", "N", "y", "Y"))) dimnames(x) <- list(row.names(tab), paste(nom, levels(moda), sep = "."))
+        # else dimnames(x) <- list(row.names(tab), levels(moda))
+        # return(x)
+    # }
+    # if (ncol(tab) == 1) 
+        # res <- modalite.disjonctif(1)
+    # else {
+        # res <- lapply(1:ncol(tab), modalite.disjonctif)
+        # res <- as.matrix(data.frame(res, check.names = FALSE))
+    # }
+    # return(res)
+# }
 
   prodna<-function (x, noNA){
     n <- nrow(x)
@@ -50,7 +48,7 @@ auxi = NULL
 don <- droplevels(don)
 for (j in 1:ncol(don)) if (is.numeric(don[,j])) auxi = c(auxi,colnames(don)[j])
 if (!is.null(auxi)) stop(paste("\nAll variables are not categorical, the following ones are numeric: ", auxi))
-vrai.tab=tab.disjonctif.NA(don)
+vrai.tab=tab.disjonctif(don)
 
 if (method.cv=="kfold"){
 res = matrix(NA,ncp.max-ncp.min+1,nbsim)
@@ -66,7 +64,7 @@ for (sim in 1:nbsim){
   if (compteur<100) stop('It is too difficult to suppress some cells.\nMaybe several categories are taken by only 1 individual. You should uppress these variables or try with method.cv="loo".')
  for (nbaxes in ncp.min:ncp.max){
   tab.disj.comp <- imputeMCA(as.data.frame(donNA),ncp=nbaxes,method=method,threshold=threshold)$tab.disj
-  if (sum(is.na(donNA))!=sum(is.na(don))) res[nbaxes-ncp.min+1,sim] <- sum((tab.disj.comp-vrai.tab)^2,na.rm=TRUE)/(sum(is.na(tab.disjonctif.NA(donNA)))-sum(is.na(tab.disjonctif.NA(don))))
+  if (sum(is.na(donNA))!=sum(is.na(don))) res[nbaxes-ncp.min+1,sim] <- sum((tab.disj.comp-vrai.tab)^2,na.rm=TRUE)/(sum(is.na(tab.disjonctif(donNA)))-sum(is.na(tab.disjonctif(don))))
  }
  if(verbose) setTxtProgressBar(pb, sim/nbsim*100)
 }

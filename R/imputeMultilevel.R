@@ -22,28 +22,28 @@ imputeMultilevel <- function(X, ifac=1, ncpB = 2, ncpW = 2, method  = c("Regular
   return(X)
 }
 
-tab.disjonctif.NA <- function(tab) {
-  tab <- as.data.frame(tab)
-  modalite.disjonctif <- function(i) {
-    moda <- tab[, i]
-    nom <- names(tab)[i]
-    n <- length(moda)
-    moda <- as.factor(moda)
-    x <- matrix(0L, n, length(levels(moda)))
-    ind <- (1:n) + n * (unclass(moda) - 1L)
-    indNA <- which(is.na(ind))
-    x[(1:n) + n * (unclass(moda) - 1)] <- 1L
-    x[indNA, ] <- NA
-    dimnames(x) <- list(row.names(tab), levels(moda))
-    return(x)
-  }
-  if (ncol(tab) == 1) res <- modalite.disjonctif(1)
-  else {
-    res <- lapply(1:ncol(tab), modalite.disjonctif)
-    res <- as.matrix(data.frame(res, check.names = FALSE))
-  }
-  return(res)
-}
+# tab.disjonctif.NA <- function(tab) {
+  # tab <- as.data.frame(tab)
+  # modalite.disjonctif <- function(i) {
+    # moda <- tab[, i]
+    # nom <- names(tab)[i]
+    # n <- length(moda)
+    # moda <- as.factor(moda)
+    # x <- matrix(0L, n, length(levels(moda)))
+    # ind <- (1:n) + n * (unclass(moda) - 1L)
+    # indNA <- which(is.na(ind))
+    # x[(1:n) + n * (unclass(moda) - 1)] <- 1L
+    # x[indNA, ] <- NA
+    # dimnames(x) <- list(row.names(tab), levels(moda))
+    # return(x)
+  # }
+  # if (ncol(tab) == 1) res <- modalite.disjonctif(1)
+  # else {
+    # res <- lapply(1:ncol(tab), modalite.disjonctif)
+    # res <- as.matrix(data.frame(res, check.names = FALSE))
+  # }
+  # return(res)
+# }
 
 moy.p <- function(V, poids) {
   res <- sum(V * poids,na.rm=TRUE)/sum(poids[!is.na(V)])
@@ -97,7 +97,7 @@ QualiAct <- QuantiAct <- NULL
     colnames(Z) <- unlist(sapply(X[,(2+nb.quanti):ncol(X),drop=FALSE], function(cc) levels(droplevels(cc))))
   }
   
-  if (nb.quali>1) {indNA = is.na(cbind(QuantiAct, tab.disjonctif.NA(QualiAct)))} else {
+  if (nb.quali>1) {indNA = is.na(cbind(QuantiAct, tab.disjonctif(QualiAct)))} else {
     indNA = is.na(QuantiAct)} # Indicator matrix for missingness: missing->TRUE, observed->FALSE.
   
   Xhat <- NULL
