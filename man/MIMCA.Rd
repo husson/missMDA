@@ -33,7 +33,7 @@ Little R.J.A., Rubin D.B. (2002) Statistical Analysis with Missing Data. Wiley s
 
 }
 
-\author{Vincent Audigier \email{vincent.audigier@cnam.fr}, Francois Husson  \email{husson@agrocampus-ouest.fr} and Julie Josse  \email{julie.josse@polytechnique.edu}
+\author{Vincent Audigier \email{vincent.audigier@cnam.fr}, Francois Husson  \email{francois.husson@institut-agro.fr} and Julie Josse  \email{julie.josse@polytechnique.edu}
 }
 
 \seealso{\code{\link{imputeMCA}},\code{\link{MIPCA}},\code{\link{estim_ncpMCA}},\code{\link{with.mids}},\code{\link{pool}},\code{\link{summary.mira}}}

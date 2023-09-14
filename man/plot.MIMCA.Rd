@@ -33,7 +33,7 @@ Four graphs can be drawn:
 }
 \references{Audigier, V., Husson, F., Josse, J. (2016). MIMCA: Multiple imputation for categorical variables with multiple correspondence analysis}
 
-\author{Audigier Vincent \email{vincent.audigier@cnam.fr}, Francois Husson  \email{husson@agrocampus-ouest.fr} and Julie Josse  \email{julie.josse@polytechnique.edu}
+\author{Audigier Vincent \email{vincent.audigier@cnam.fr}, Francois Husson  \email{francois.husson@institut-agro.fr} and Julie Josse  \email{julie.josse@polytechnique.edu}
 }
 
 \seealso{\code{\link{MIMCA}},\code{\link{imputeMCA}}}

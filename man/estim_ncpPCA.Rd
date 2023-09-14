@@ -45,7 +45,7 @@ This argument scale has to be chosen in agreement with the PCA that will be perf
 Josse, J. and Husson, F. (2011). Selecting the number of components in PCA using cross-validation approximations. Computational Statistics and Data Analysis. 56 (6), pp. 1869-1879.}
 
 
-\author{Francois Husson  \email{husson@agrocampus-ouest.fr} and Julie Josse  \email{julie.josse@polytechnique.edu}
+\author{Francois Husson  \email{francois.husson@institut-agro.fr} and Julie Josse  \email{julie.josse@polytechnique.edu}
 }
 \seealso{\code{\link{imputePCA}}}
 \examples{

@@ -35,7 +35,7 @@ Four graphs can be drawn:
 }
 \references{Josse, J., Husson, F. (2010). Multiple Imputation in PCA}
 
-\author{Francois Husson  \email{husson@agrocampus-ouest.fr} and Julie Josse  \email{julie.josse@polytechnique.edu}
+\author{Francois Husson  \email{francois.husson@institut-agro.fr} and Julie Josse  \email{julie.josse@polytechnique.edu}
 }
 
 \seealso{\code{\link{MIPCA}},\code{\link{imputePCA}}}

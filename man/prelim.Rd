@@ -15,7 +15,7 @@ prelim(res.mi,X)
 \item{imp.mids}{An object of type mids}
 }
 
-\author{Vincent Audigier \email{vincent.audigier@lecnam.net}, Francois Husson  \email{husson@agrocampus-ouest.fr} and Julie Josse  \email{josse@agrocampus-ouest.fr}
+\author{Vincent Audigier \email{vincent.audigier@lecnam.net}, Francois Husson  \email{francois.husson@institut-agro.fr} and Julie Josse  \email{josse@agrocampus-ouest.fr}
 }
 
 \seealso{\code{\link{MIFAMD}},\code{\link{MIPCA}},\code{\link{MIMCA}},\code{\link{with.mids}},\code{\link{pool}},\code{\link{summary.mira}}}

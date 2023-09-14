@@ -28,7 +28,7 @@ We advice to use the regularized version of the algorithm to avoid the overfitti
   \item{completeObs}{the mixed imputed dataset; the observed values are kept for the non-missing entries and the missing values are replaced by the predicted ones. For the continuous variables, the values are the same as in the tab.disj output; for the categorical variables missing values are imputed with the most plausible categories according to the values in the tab.disj output}
  }
 
-\author{Francois Husson  \email{husson@agrocampus-ouest.fr} and Julie Josse  \email{julie.josse@polytechnique.edu}
+\author{Francois Husson  \email{francois.husson@institut-agro.fr} and Julie Josse  \email{julie.josse@polytechnique.edu}
 }
 
 \references{F. Husson, J. Josse, B. Narasimhan, G. Robin (2019). Imputation of mixed data with multilevel singular value decomposition. Journal of Computational and Graphical Statistics, 28 (3), pp. 552-566 <DOI:10.1080/10618600.2019.1585261>}

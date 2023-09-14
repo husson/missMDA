@@ -10,20 +10,12 @@ impute missing values in continuous data sets using the PCA model, categorical d
 generate multiple imputed data sets for continuous data using the PCA model and for categorical data using MCA\cr
 visualize multiple imputation in PCA and MCA}
 \details{
-\tabular{ll}{
-Package: \tab missMDA\cr
-Type: \tab Package\cr
-Version: \tab 1.11\cr
-Date: \tab 2017-03-16\cr
-License: \tab GPL \cr
-LazyLoad: \tab yes\cr
-}
-}
+The package missMDA impute incomplete datasets for quantitative and / or categorical variables}
 
 \author{
 Francois Husson, Julie Josse
 
-Maintainer: \email{husson@agrocampus-ouest.fr}
+Maintainer: \email{francois.husson@institut-agro.fr}
 }
 
 \references{

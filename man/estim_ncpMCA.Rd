@@ -32,7 +32,7 @@ For the Kfold cross-validation (method.cv="Kfold"), pNA percentage of missing va
 }
 \references{Josse, J., Chavent, M., Liquet, B. and Husson, F. (2010). Handling missing values with Regularized Iterative Multiple Correspondence Analysis, Journal of Clcassification, 29 (1), pp. 91-116.}
 
-\author{Francois Husson  \email{husson@agrocampus-ouest.fr} and Julie Josse  \email{julie.josse@polytechnique.edu}
+\author{Francois Husson  \email{francois.husson@institut-agro.fr} and Julie Josse  \email{julie.josse@polytechnique.edu}
 }
 \seealso{\code{\link{imputeMCA}}}
 \examples{
