@@ -167,7 +167,7 @@ function(X,
     if("ordered"%in%classvar){classvar[classvar=="ordered"]<-"factor"}
     
     donimp<-don
-    donimp[,which(classvar=="numeric")]<-res.imp$tab.disj[,seq(length(res.imp$quanti.act))]#les quanti active sont les premières variables du tdc
+    donimp[,which(classvar=="numeric")]<-res.imp$tab.disj[,seq(length(res.imp$quanti.act))]#les quanti active sont les premieres variables du tdc
     missing.quanti <-is.na(don[,res.imp$quanti.act])
     res.MI<-vector("list",length=nboot);names(res.MI)<-paste("nboot=",1:nboot,sep="")
     for(i in seq(nboot)){ 

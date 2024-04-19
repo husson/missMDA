@@ -181,6 +181,9 @@ plot.MIMCA<-function (x, choice = "all", axes = c(1, 2), new.plot = TRUE,
       as.factor(rep(rownames(reference$var$coord), res$call$nboot)),
       oo$ind.sup$coord[, 1:2]), level.conf = level.conf)
     
+#    plot.tmp(oo, axes = axes, col.ind.sup = rep(1:nrow(reference$var$coord), res$call$nboot),
+#          label = "ind", col.quali = 1, ellipse = el,title = title, invisible = c("ind.sup","var"), new.plot = FALSE, graph.type=graph.type)
+
     # graph$PlotModSupp <- plot.tmp(oo, axes = axes, col.ind.sup = rep(1:nrow(reference$var$coord), res$call$nboot),
          # label = "ind", col.quali = 1, ellipse = el,title = title, invisible = c("ind.sup","var"), new.plot = FALSE)
   }

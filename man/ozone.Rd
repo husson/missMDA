@@ -13,7 +13,7 @@ A data frame with 112 observations on 13 variables.
 }
 
 \source{
-Cornillon, P.-A., Guyader, A., Husson, F., Jégou, N., Josse, J., Kloareg, M., Matzner-Lober, E., Rouvière, L., (2012). R for Statistics. Chapman & Hall/CRC Computer Science & Data Analysis, Rennes.
+Cornillon, P.-A., Guyader, A., Husson, F., Jegou, N., Josse, J., Kloareg, M., Matzner-Lober, E., Rouviere, L., (2012). R for Statistics. Chapman & Hall/CRC Computer Science & Data Analysis, Rennes.
 }
 
 \examples{

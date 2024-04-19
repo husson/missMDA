@@ -10,6 +10,6 @@ Imports: FactoMineR (>= 2.3),ggplot2,graphics,grDevices,mice,mvtnorm,stats,utils
 Suggests: knitr, markdown
 License: GPL (>= 2)
 URL: http://factominer.free.fr/missMDA/index.html
-Encoding: latin1
+Encoding: UTF-8
 LazyLoad: yes
 VignetteBuilder: knitr

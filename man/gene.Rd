@@ -16,7 +16,7 @@ and GBM, glioblastomas)  are described by information at the transcriptome level
 A data-frame with 53 rows and 432 continuous variables}
 
 \source{
-de Tayrac M, Lê S, Aubry M, Mosser J, Husson F. (2009). Simultaneous analysis of distinct Omics data sets with integration of biological knowledge: Multiple Factor Analysis approach. BMC Genomics, 10.}
+de Tayrac M, Le S, Aubry M, Mosser J, Husson F. (2009). Simultaneous analysis of distinct Omics data sets with integration of biological knowledge: Multiple Factor Analysis approach. BMC Genomics, 10.}
 
 \examples{
 \dontrun{
