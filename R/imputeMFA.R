@@ -56,8 +56,7 @@ imputeMFA<-function (X, group, ncp = 2, type = rep("s", length(group)),
     method <- match.arg(method, c("Regularized", "regularized", 
                                   "EM", "em"), several.ok = T)[1]
     method <- tolower(method)
-    if (!is.null(seed)) 
-      set.seed(seed)
+    if (!is.null(seed)) set.seed(seed)
     X <- as.data.frame(X)
     X <- droplevels(X)
     if ("n" %in% type) {
@@ -155,7 +154,11 @@ imputeMFA<-function (X, group, ncp = 2, type = rep("s", length(group)),
         if (any(is.na(aux.base))) aux.base[missing] <- 0
         ponderation[g] <- FactoMineR::svd.triplet(aux.base, ncp = 1, row.w = row.w)$vs[1]
         Xhat <- cbind.data.frame(Xhat, aux.base/ponderation[g])
-        if (!is.null(seed) & (length(missing) != 0))  Xhat[missing, ] <- rnorm(length(missing))
+        if (!is.null(seed) & (length(missing) != 0)){
+          Xhat <- as.matrix(Xhat)
+          Xhat[missing] <- rnorm(length(missing))
+          Xhat <- as.data.frame(Xhat)}
+        }
       }
       if (type[g] == "c") {
         Xhat2 <- cbind.data.frame(Xhat2, aux.base)
@@ -166,7 +169,11 @@ imputeMFA<-function (X, group, ncp = 2, type = rep("s", length(group)),
         if (any(is.na(aux.base))) aux.base[missing] <- 0
         ponderation[g] = FactoMineR::svd.triplet(aux.base, ncp = 1, row.w = row.w)$vs[1]
         Xhat <- cbind.data.frame(Xhat, aux.base/ponderation[g])
-        if (!is.null(seed) & (length(missing) != 0)) Xhat[missing, ] <- rnorm(length(missing))
+        if (!is.null(seed) & (length(missing) != 0)){
+          Xhat <- as.matrix(Xhat)
+          Xhat[missing] <- rnorm(length(missing))
+          Xhat <- as.data.frame(Xhat)}
+        }
       }
       if (type[g] == "n") {
         tab.disj = tab.disjonctif.prop(aux.base, seed, row.w = row.w)
