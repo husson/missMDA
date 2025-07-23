@@ -41,7 +41,7 @@ Vincent Audigier \email{vincent.audigier@lecnam.net}
 
 %% ~Make other sections like Warning with \section{Warning }{....} ~
 
-\seealso{\code{\link{imputeFAMD}},\code{\link{MIPCA}},\code{\link{MIMCA}},\code{\link{estim_ncpFAMD}},\code{\link{with.mids}},\code{\link{pool}},\code{\link{summary.mira}}}
+\seealso{\code{\link{imputeFAMD}},\code{\link{MIPCA}},\code{\link{MIMCA}},\code{\link{estim_ncpFAMD}},\code{\link[mice]{with.mids}},\code{\link[mice]{pool}},\code{\link[mice]{summary.mira}}}
 
 \examples{
 \dontrun{

@@ -157,7 +157,7 @@ imputeMFA<-function (X, group, ncp = 2, type = rep("s", length(group)),
         if (!is.null(seed) & (length(missing) != 0)){
           Xhat <- as.matrix(Xhat)
           Xhat[missing] <- rnorm(length(missing))
-          Xhat <- as.data.frame(Xhat)}
+          Xhat <- as.data.frame(Xhat)
         }
       }
       if (type[g] == "c") {
@@ -172,7 +172,7 @@ imputeMFA<-function (X, group, ncp = 2, type = rep("s", length(group)),
         if (!is.null(seed) & (length(missing) != 0)){
           Xhat <- as.matrix(Xhat)
           Xhat[missing] <- rnorm(length(missing))
-          Xhat <- as.data.frame(Xhat)}
+          Xhat <- as.data.frame(Xhat)
         }
       }
       if (type[g] == "n") {

@@ -18,7 +18,7 @@ prelim(res.mi,X)
 \author{Vincent Audigier \email{vincent.audigier@lecnam.net}, Francois Husson  \email{francois.husson@institut-agro.fr} and Julie Josse  \email{josse@agrocampus-ouest.fr}
 }
 
-\seealso{\code{\link{MIFAMD}},\code{\link{MIPCA}},\code{\link{MIMCA}},\code{\link{with.mids}},\code{\link{pool}},\code{\link{summary.mira}}}
+\seealso{\code{\link{MIFAMD}},\code{\link{MIPCA}},\code{\link{MIMCA}},\code{\link[mice]{with.mids}},\code{\link[mice]{pool}},\code{\link[mice]{summary.mira}}}
 \examples{
 \dontrun{
 data(TitanicNA)
