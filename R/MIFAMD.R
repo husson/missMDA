@@ -1,14 +1,5 @@
-MIFAMD <-
-function(X,
-                 ncp = 2,
-                 method = c("Regularized","EM"),
-                 coeff.ridge = 1,
-                 threshold = 1e-06,
-                 seed = NULL,
-                 maxiter = 1000,
-                 nboot=20,
-                 verbose=T
-){
+MIFAMD <- function(X, ncp = 2, method = c("Regularized","EM"), coeff.ridge = 1,
+                 threshold = 1e-06, seed = NULL, maxiter = 1000, nboot=20, verbose=TRUE){
   
   #intern functions
   
@@ -81,16 +72,9 @@ function(X,
   }
   
   
-  imputeFAMD.stoch<-function(don, 
-                             ncp = 4, 
-                             method = c("Regularized", "EM"), 
-                             row.w = NULL, 
-                             coeff.ridge = 1, 
-                             threshold = 1e-06, 
-                             seed = NULL,
-                             maxiter = 1000,
-                             nboot,
-                             verbose=FALSE){
+  imputeFAMD.stoch<-function(don, ncp = 4, method = c("Regularized", "EM"), 
+                     row.w = NULL, coeff.ridge = 1, threshold = 1e-06, 
+                     seed = NULL, maxiter = 1000, nboot, verbose=FALSE){
     normtdc <- function(tab.disj, data.na) {
       tdc <- tab.disj
       tdc[tdc < 0] <- 0
@@ -102,9 +86,7 @@ function(X,
         }
         if(length(col.suppr)>1){
           for (i in 2:length(col.suppr)) {
-            x[(col.suppr[i - 1] + 1):(col.suppr[i])] <- x[(col.suppr[i - 
-                                                                       1] + 1):(col.suppr[i])]/sum(x[(col.suppr[i - 
-                                                                                                                  1] + 1):col.suppr[i]])
+            x[(col.suppr[i - 1] + 1):(col.suppr[i])] <- x[(col.suppr[i - 1] + 1):(col.suppr[i])]/sum(x[(col.suppr[i - 1] + 1):col.suppr[i]])
           }}
         return(x)
       }, col.suppr = col.suppr))
@@ -118,11 +100,9 @@ function(X,
       Donres <- Don
       for (i in is.quali) {
         Donres[, i] <- as.factor(levels(Don[, i])[apply(tabdisj[, 
-                                                                (vec[i] + 1):vec[i + 1]], 1, function(x) {
-                                                                  sample(1:length(x), size = 1, prob = x)
-                                                                })])
-        Donres[, i] <- factor(Donres[, i], levels(Don[, is.quali,drop=FALSE][, 
-                                                                             i]))
+                      (vec[i] + 1):vec[i + 1]], 1, function(x) {
+                       sample(1:length(x), size = 1, prob = x)})])
+        Donres[, i] <- factor(Donres[, i], levels(Don[, is.quali,drop=FALSE][, i]))
       }
       return(don.imp = Donres)
     }
@@ -145,31 +125,25 @@ function(X,
       stop(paste0("row.w of class ",class(Row.w),", it needs to be an integer"))
     }
     
-    
     res.imp<-imputeFAMD(X=don, ncp = ncp, method = method, row.w = D,
                         coeff.ridge = coeff.ridge, threshold = threshold, seed = seed, maxiter = maxiter)
     
-    
-    var_homo<-estim.sigma2(Xquanti=don[,quanti,drop=FALSE],
-                           Xquali=don[,-quanti,drop=FALSE],
-                           M=1/apply(res.imp$tab.disj,2,var),
-                           Zhat=res.imp$tab.disj,
-                           ncp=ncp,
-                           D=D,WW=WW)
+    var_homo<-estim.sigma2(Xquanti=don[,quanti,drop=FALSE], Xquali=don[,-quanti,drop=FALSE],
+                           M=1/apply(res.imp$tab.disj,2,var), Zhat=res.imp$tab.disj,
+                           ncp=ncp, D=D,WW=WW)
     sigma2<-var_homo/(1/apply(res.imp$tab.disj,2,var)[quanti])
     res.imp$fittedX<-res.imp$tab.disj
     res.imp$quanti.act<-which(sapply(don,is.numeric))
-    
-    
     
     classvar<-unlist(lapply(lapply(don,class),"[",1))#quand le type est "ordered" il y a 2 classes pour la variable
     if("integer"%in%classvar){classvar[classvar=="integer"]<-"numeric"}
     if("ordered"%in%classvar){classvar[classvar=="ordered"]<-"factor"}
     
-    donimp<-don
+    donimp <- don
     donimp[,which(classvar=="numeric")]<-res.imp$tab.disj[,seq(length(res.imp$quanti.act))]#les quanti active sont les premieres variables du tdc
     missing.quanti <-is.na(don[,res.imp$quanti.act])
     res.MI<-vector("list",length=nboot);names(res.MI)<-paste("nboot=",1:nboot,sep="")
+    res.tab.disj<-vector("list",length=nboot);names(res.tab.disj)<-paste("nboot=",1:nboot,sep="")
     for(i in seq(nboot)){ 
       if(verbose){cat(paste(i, "...", sep = ""))}
       donimp.tmp<-donimp
@@ -180,26 +154,25 @@ function(X,
         donimp.tmp[,which(classvar=="factor")]<-donimp.quali[,names(which(classvar=="factor"))]
       }
       donimp.tmp[,res.imp$quanti.act][missing.quanti]<-res.imp$fittedX[,res.imp$quanti.act][missing.quanti]+rmvnorm(nrow(don),sigma=diag(sigma2))[missing.quanti]
-      res.MI[[paste("nboot=",i,sep="")]]<-donimp.tmp
+      res.MI[[paste("nboot=",i,sep="")]] <- donimp.tmp
+      res.tab.disj[[paste("nboot=",i,sep="")]] <- cbind.data.frame(donimp.tmp[,res.imp$quanti.act],tdc.norm)
     }
     if (verbose) {
       cat("\ndone!\n")
     }
-    res.MI<-list(res.MI=res.MI,sigma2=sigma2)
+    res.MI<-list(res.MI=res.MI,res.tab.disj=res.tab.disj,sigma2=sigma2)
     class(res.MI)<-"MIFAMD"
     return(res.MI)
   }
   
-  imputeFAMD.stoch.print <- function(don, ncp, method = c("Regularized", 
-                                                          "EM"), row.w = NULL, coeff.ridge = 1, threshold = 1e-06, 
-                                     seed = NULL, maxiter = 1000, verbose, printm) {
-    if (verbose) {
-      cat(paste(printm, "...", sep = ""))
-    }
-    res <- imputeFAMD.stoch(don = don, ncp = ncp, method = method, 
-                            row.w = row.w, coeff.ridge = coeff.ridge, threshold = threshold, 
-                            seed = seed, maxiter = maxiter,nboot=1)$res.MI[[1]]
-    return(res)
+  imputeFAMD.stoch.print <- function(don, ncp, method = c("Regularized","EM"), row.w = NULL,
+                coeff.ridge = 1, threshold = 1e-06, seed = NULL, maxiter = 1000, verbose, printm) {
+    if (verbose) cat(paste(printm, "...", sep = ""))
+    res <- imputeFAMD.stoch(don = don, ncp = ncp, method = method, row.w = row.w,
+                    coeff.ridge = coeff.ridge, threshold = threshold, seed = seed, maxiter = maxiter,nboot=1)
+	res1 <- res$res.MI
+	res <- res$res.tab.disj
+    return(list(res.MI=res1,tab.disj=res))
   }
   
   #check if data are mixed
@@ -233,24 +206,19 @@ function(X,
     return(yy)})
   Weight <- as.data.frame(matrix(0, n, nboot, dimnames = list(1:n,paste("nboot=", 1:nboot, sep = ""))))
   Boot.table <- lapply(Boot, table)
-  for (i in 1:nboot) {
-    Weight[names(Boot.table[[i]]), i] <- Boot.table[[i]]
-  }
-  Weight <-do.call(cbind.data.frame,lapply(Weight,as.integer))
-  res.imp <- mapply(Weight,
-                    FUN = imputeFAMD.stoch.print,
-                    MoreArgs = list(don = don,ncp = ncp,
-                                    coeff.ridge = coeff.ridge,
-                                    method =method,
-                                    threshold = threshold,
-                                    maxiter = maxiter,
-                                    verbose=verbose,
-                                    seed=NULL),printm = as.character(1:nboot),
-                    SIMPLIFY = FALSE)
-  res <- list(res.MI = res.imp)
-  res <- list(res.MI = lapply(res$res.MI,function(xx,nom){return(xx[,nom])},nom=colnames(X)),
-              res.imputeFAMD = imputeFAMD(X,ncp = ncp, coeff.ridge = coeff.ridge, method =method,  threshold = threshold,  maxiter = maxiter,seed=seed),
-              call=list(X = X,nboot = nboot, ncp = ncp, coeff.ridge = coeff.ridge, threshold = threshold, seed = seed, maxiter = maxiter))
+  for (i in 1:nboot)  Weight[names(Boot.table[[i]]), i] <- Boot.table[[i]]
+  Weight <- do.call(cbind.data.frame,lapply(Weight,as.integer))
+  res.imp <- mapply(Weight, FUN = imputeFAMD.stoch.print,
+                MoreArgs = list(don=don,ncp=ncp, coeff.ridge=coeff.ridge,method=method,
+                   threshold=threshold, maxiter=maxiter, verbose=verbose, seed=NULL),
+				   printm = as.character(1:nboot), SIMPLIFY = FALSE)
+resMI <- do.call(c, lapply(res.imp, `[[`, "res.MI"))
+tab.disj <- do.call(c, lapply(res.imp, `[[`, "tab.disj"))
+names(resMI) <- names(tab.disj) <- paste0("nboot.",1:nboot)
+#  res <- list(res.MI = res.imp)
+  res <- list(res.MI = resMI,
+              res.imputeFAMD = imputeFAMD(X,ncp=ncp, coeff.ridge=coeff.ridge, method=method, threshold=threshold, maxiter=maxiter,seed=seed),
+              call=list(X=X,nboot=nboot, ncp=ncp, coeff.ridge=coeff.ridge, threshold=threshold, seed=seed, maxiter=maxiter,tab.disj=tab.disj))
   class(res) <- c("MIFAMD", "list")
   if (verbose) {
     cat("\ndone!\n")

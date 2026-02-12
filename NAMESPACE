@@ -1,4 +1,4 @@
-export(estim_ncpFAMD,estim_ncpPCA,estim_ncpMCA,estim_ncpMultilevel,imputeCA,imputeFAMD,imputeMCA,imputeMFA,imputeMultilevel,imputePCA,MIMCA,MIFAMD,MIPCA,Overimpute,prelim,plot.MIPCA,plot.MIMCA)
+export(estim_ncpFAMD,estim_ncpPCA,estim_ncpMCA,estim_ncpMultilevel,imputeCA,imputeFAMD,imputeMCA,imputeMFA,imputeMultilevel,imputePCA,MIMCA,MIFAMD,MIPCA,Overimpute,prelim,plot.MIPCA,plot.MIMCA,plot.MIFAMD)
 import(doParallel)
 import(foreach)
 import(parallel)

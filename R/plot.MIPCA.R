@@ -3,66 +3,58 @@ plot.MIPCA <- function(x,choice="all",axes=c(1,2),new.plot=TRUE,main=NULL,level.
 ####
  procrustes <- function(amat, target, orthogonal = FALSE, translate = FALSE,
         magnify = FALSE) {
-        for (i in nrow(amat):1) {
-            if (any(is.na(amat)[i, ]) | any(is.na(target)[i,
-                ])) {
-                amat <- amat[-i, ]
-                target <- target[-i, ]
-            }
-        }
+#        for (i in nrow(amat):1) {
+#            if (any(is.na(amat)[i, ]) | any(is.na(target)[i,
+#                ])) {
+#                amat <- amat[-i, ]
+#                target <- target[-i, ]
+#            }
+#        }
         dA <- dim(amat)
         dX <- dim(target)
-        if (length(dA) != 2 || length(dX) != 2)
-            stop("arguments amat and target must be matrices")
-        if (any(dA != dX))
-            stop("dimensions of amat and target must match")
-        if (length(attr(amat, "tmat")))
-            stop("oblique loadings matrix not allowed for amat")       
+#       if (length(dA) != 2 || length(dX) != 2)
+#            stop("arguments amat and target must be matrices")
+#        if (any(dA != dX))
+#            stop("dimensions of amat and target must match")
+#        if (length(attr(amat, "tmat")))
+#            stop("oblique loadings matrix not allowed for amat")       
 if (orthogonal) {
             if (translate) {
                 p <- dX[1]
-                target.m <- (rep(1/p, p) %*% target)[, ]
-                amat.m <- (rep(1/p, p) %*% amat)[, ]
-                target.c <- scale(target, center = target.m,
-                  scale = FALSE)
+                target.m <- colMeans(target)
+                amat.m <- colMeans(amat)
+                target.c <- scale(target, center = target.m,scale = FALSE)
                 amat.c <- scale(amat, center = amat.m, scale = FALSE)
                 j <- svd(crossprod(target.c, amat.c))
             }
-            else {
-                amat.c <- amat
-                j <- svd(crossprod(target, amat))
-            }
-       
-
+#			else {
+#                amat.c <- amat
+#                j <- svd(crossprod(target, amat))
+#            }
             rot <- j$v %*% t(j$u)
-            if (magnify)
+#            if (magnify)
                 beta <- sum(j$d)/sum(amat.c^2)
-            else beta <- 1
+#            else beta <- 1
 
             B <- beta * amat.c %*% rot
-            if (translate)
-                B <- B + rep(as.vector(target.m), rep.int(p,
-                  dX[2]))
-   
-       value <- list(rmat = B, tmat = rot, magnify = beta)
-            if (translate)
-                value$translate <- target.m - (rot %*% amat.m)[,
-                  ]
+            if (translate) B <- B + rep(as.vector(target.m), rep.int(p,dX[2]))   
+            value <- list(rmat = B, tmat = rot, magnify = beta)
+            if (translate) value$translate <- target.m - (rot %*% amat.m)
     
   }
-
-        else {
-            b <- solve(amat, target)
-            gamma <- sqrt(diag(solve(crossprod(b))))
-            rot <- b * rep(gamma, rep.int(dim(b)[1], length(gamma)))
-            B <- amat %*% rot
-            fcor <- solve(crossprod(rot))
-            value <- list(rmat = B, tmat = rot, correlation = fcor)
-        }
-
+#  else {
+#            b <- solve(amat, target)
+#            gamma <- sqrt(diag(solve(crossprod(b))))
+#            rot <- b * rep(gamma, rep.int(dim(b)[1], length(gamma)))
+#            B <- amat %*% rot
+#            fcor <- solve(crossprod(rot))
+#            value <- list(rmat = B, tmat = rot, correlation = fcor)
+#        }
         return(value)
     }
 ####
+  choice <- tolower(choice)
+  choice <- match.arg(choice,c("all","ind.supp","ind.proc","dim","var"))
   res <- x
   if (!inherits(res, "MIPCA")) stop("non convenient data")
   ncp <- max(axes)
@@ -96,7 +88,7 @@ for (i in 1:length(res$res.MI)){
 if (!is.null(main)) title <- main
 graph.type <- match.arg(graph.type[1],c("ggplot","classic"))
 if (graph.type=="ggplot") graph <- list()
-if ((choice=="all")|(choice=="ind.proc")){
+if (("all"%in%choice)|("ind.proc"%in%choice)){
   if ((new.plot)&!nzchar(Sys.getenv("RSTUDIO_USER_IDENTITY"))) dev.new()
   oo=FactoMineR::PCA(res.procrustes,ind.sup=c((nrow(res$call$X)+1):nrow(res.procrustes)),scale.unit=FALSE,graph=FALSE)
   oo$eig=reference$eig
@@ -115,7 +107,7 @@ if ((choice=="all")|(choice=="ind.proc")){
 #  }
 }
 
-if ((choice=="all")|(choice=="dim")){
+if (("all"%in%choice)|("dim"%in%choice)){
   if ((new.plot)&!nzchar(Sys.getenv("RSTUDIO_USER_IDENTITY"))) dev.new()
   colnames(res.dim)=paste("V",1:ncol(res.dim))
   ooo=FactoMineR::PCA(res.dim,quanti.sup=(ncol(res$call$X)+1):ncol(res.dim),scale.unit=res$call$scale,graph=FALSE)
@@ -128,13 +120,17 @@ if ((choice=="all")|(choice=="dim")){
   }
 }
 
-if ((choice=="all")|(choice=="ind.supp")){
+if (("all"%in%choice)|("ind.supp"%in%choice)){
   if ((new.plot)&!nzchar(Sys.getenv("RSTUDIO_USER_IDENTITY"))) dev.new()
   oo=FactoMineR::PCA(res.supp,ind.sup=c((nrow(res$call$X)+1):nrow(res.supp)),scale.unit=res$call$scale,graph=FALSE,ncp=ncp)
-  el=coord.ellipse(cbind.data.frame(as.factor(rep(rownames(res$call$X),res$call$nboot)),oo$ind.sup$coord),level.conf = level.conf,axes = axes)
+  if (is.null(rownames(res$call$X))) rownames(res$call$X) <- 1:nrow(res$call$X)
+  el=coord.ellipse(cbind.data.frame(as.factor(rep(rownames(res$call$X),res$call$nboot)),oo$ind.sup$coord),level.conf = level.conf,axes = axes,npoint=30)
   if (is.null(main)) title="Supplementary projection"    
-  PlotIndSupp <- plot(oo,axes=axes,col.ind.sup=rep(1:nrow(res$call$X),res$call$nboot),label="ind",ellipse=el,col.quali=1,
-    title=title,invisible="ind.sup",new.plot=FALSE, graph.type=graph.type)
+  oo$ind.sup <- NULL
+  PlotIndSupp <- plot(oo,axes=axes,label="ind",ellipse=el,col.quali=1,
+    title=title,new.plot=FALSE, graph.type=graph.type)
+#  PlotIndSupp <- plot(oo,axes=axes,col.ind.sup=rep(1:nrow(res$call$X),res$call$nboot),label="ind",ellipse=el,col.quali=1,
+#    title=title,invisible="ind.sup",new.plot=FALSE, graph.type=graph.type)
   if (graph.type=="ggplot"){
     print(PlotIndSupp)
     graph$PlotIndSupp <- PlotIndSupp
@@ -145,7 +141,7 @@ if ((choice=="all")|(choice=="ind.supp")){
 #  }
 }
 
-if ((choice=="all")|(choice=="var")){
+if (("all"%in%choice)|("var"%in%choice)){
   if ((new.plot)&!nzchar(Sys.getenv("RSTUDIO_USER_IDENTITY"))) dev.new()
   color = c("black", "red", "green3", "blue", "cyan", "magenta", 
             "darkgray", "darkgoldenrod", "darkgreen", "violet", 

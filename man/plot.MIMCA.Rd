@@ -6,7 +6,7 @@
 \description{From the multiple imputed datasets, the function plots graphs for the individuals, categories and dimensions for the Multiple Correspondance Analysis (MCA)}
 
 \usage{\method{plot}{MIMCA}(x, choice = "all", axes = c(1, 2), new.plot = TRUE, 
-   main = NULL, level.conf = 0.95, \dots)
+   main = NULL, level.conf = 0.95, graph.type = c("ggplot","classic"), \dots)
 }
 
 \arguments{
@@ -16,6 +16,7 @@
   \item{new.plot}{boolean, if TRUE, a new graphical device is created}
   \item{main}{string corresponding to the title of the graph you draw (by default NULL and a title is chosen)}
   \item{level.conf}{confidence level used to construct the ellipses. By default, 0.95}
+  \item{graph.type}{a character that gives the type of graph used: "ggplot" or "classic"}
   \item{\dots}{further arguments passed to or from other methods}
 }
 

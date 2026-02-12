@@ -7,7 +7,7 @@ Multiple Imputation with FAMD
 MIFAMD performs multiple imputations for mixed data (continuous and categorical) using Factorial Analysis of Mixed Data.}
 \usage{
 MIFAMD(X, ncp = 2, method = c("Regularized", "EM"), coeff.ridge = 1, threshold = 1e-06, 
-    seed = NULL, maxiter = 1000, nboot = 20, verbose = T)
+    seed = NULL, maxiter = 1000, nboot = 20, verbose = TRUE)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -30,8 +30,6 @@ MIFAMD(X, ncp = 2, method = c("Regularized", "EM"), coeff.ridge = 1, threshold =
 }
 \references{
 Audigier, V., Husson, F. & Josse, J. (2015). A principal components method to impute mixed data. Advances in Data Analysis and Classification, 10(1), 5-26. <doi:10.1007/s11634-014-0195-1>
-
-Audigier, V., Husson, F., Josse, J. (2017). MIMCA: Multiple imputation for categorical variables with multiple correspondence analysis. <doi:10.1007/s11222-016-9635-4>
 
 Little R.J.A., Rubin D.B. (2002) Statistical Analysis with Missing Data. Wiley series in probability and statistics, New-York
 }
