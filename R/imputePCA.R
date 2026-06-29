@@ -36,12 +36,13 @@ impute <- function (X, ncp = 4, scale=TRUE, method=NULL,ind.sup=NULL,quanti.sup=
        et <- apply(Xhat, 2, ec,row.w)
        if (scale) Xhat <- t(t(Xhat)/et)
    if (!is.null(quanti.sup)) Xhat[,quanti.sup] <- Xhat[,quanti.sup]*1e-08
-
-       svd.res <- FactoMineR::svd.triplet(Xhat,row.w=row.w,ncp=ncp)
-##       sigma2 <- mean(svd.res$vs[-(1:ncp)]^2)
-	   # sigma2  <- nrow(X)*ncol(X)/min(ncol(X),nrow(X)-1)* sum((svd.res$vs[-c(1:ncp)]^2)/((nrow(X)-1) * ncol(X) - (nrow(X)-1) * ncp - ncol(X) * ncp + ncp^2))
-	   sigma2  <- nrX*ncX/min(ncX,nrX-1)* sum((svd.res$vs[-c(1:ncp)]^2)/((nrX-1) * ncX - (nrX-1) * ncp - ncX * ncp + ncp^2))
-       sigma2 <- min(sigma2*coeff.ridge,svd.res$vs[ncp+1]^2)
+       if (ncp>=0.5*min(dim(Xhat))){
+	     svd.res <- FactoMineR::svd.triplet(Xhat,row.w=row.w,ncp=ncp)
+       } else{
+	     svd.res <- irlba.triplet(Xhat,row.w=row.w,ncp=ncp+1)
+       }
+	   sigma2 <- nrX*ncX/min(ncX,nrX-1)* (svd.res$sumvp-sum(svd.res$vs[1:ncp]^2))/((nrX-1) * ncX - (nrX-1) * ncp - ncX * ncp + ncp^2)
+	   sigma2 <- min(sigma2*coeff.ridge,svd.res$vs[ncp+1]^2)
        if (method=="em") sigma2 <-0
        lambda.shrinked=(svd.res$vs[1:ncp]^2-sigma2)/svd.res$vs[1:ncp]
        fittedX = tcrossprod(t(t(svd.res$U[,1:ncp,drop=FALSE]*row.w)*lambda.shrinked),svd.res$V[,1:ncp,drop=FALSE])
@@ -49,7 +50,6 @@ impute <- function (X, ncp = 4, scale=TRUE, method=NULL,ind.sup=NULL,quanti.sup=
 	   diff <- Xhat-fittedX
 	   diff[missing] <- 0
        objective <- sum(diff^2*row.w)
-#       objective <- mean((Xhat[-missing]-fittedX[-missing])^2)
        criterion <- abs(1 - objective/old)
        old <- objective
        nb.iter <- nb.iter + 1
@@ -92,8 +92,6 @@ impute <- function (X, ncp = 4, scale=TRUE, method=NULL,ind.sup=NULL,quanti.sup=
  if (ncp>min(nrow(X)-2,ncol(X)-1)) stop("ncp is too large")
  if (is.null(row.w)) row.w = rep(1,nrow(X))/nrow(X)
  if (!is.null(ind.sup)) row.w[ind.sup] <- row.w[ind.sup]*1e-08
- # col.w = rep(1,ncol(X))
- # if (!is.null(quanti.sup)) col.w[quanti.sup] <- 1e-8
  for (i in 1:nb.init){
   if (!any(is.na(X))) return(X)
   res.impute=impute(X, ncp=ncp, scale=scale, method=method, ind.sup=ind.sup,quanti.sup=quanti.sup,quali.sup=quali.sup,threshold = threshold,seed=if(!is.null(seed)){(seed*(i-1))}else{NULL},init=i,maxiter=maxiter,row.w=row.w,coeff.ridge=coeff.ridge)

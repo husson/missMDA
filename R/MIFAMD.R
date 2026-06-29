@@ -39,13 +39,15 @@ MIFAMD <- function(X, ncp = 2, method = c("Regularized","EM"), coeff.ridge = 1,
       if(is.null(D)){D<-rep(1/nrow(zz),nrow(zz))}
       moy<-colMeans(zz)
       zzimp<-sweep(zz,MARGIN = 2,FUN = "-",STATS = moy)
-      res.svd<-svd.triplet(zzimp,col.w = M,row.w = D,ncp=ncp)
-      tmp<-seq(ncol(zz)-ncol(xxquali))
-      if (nrow(zz) > length(tmp)){ 
-        moyeig <- mean(res.svd$vs[tmp[-seq(ncp)]]^2)
-      }else{
-        moyeig <- mean(res.svd$vs[-c(1:ncp)]^2)
-      }
+       if (ncp>=0.5*min(dim(zzimp))){
+	     res.svd <- FactoMineR::svd.triplet(zzimp,col.w = M,row.w = D,ncp=ncp)
+         tmp <- seq(ncol(zz)-ncol(Xquali))
+       } else{
+	     res.svd <- irlba.triplet(zzimp,col.w = M,row.w = D,ncp=ncp+1)
+		 res.svd$U <- res.svd$U[,1:ncp]
+		 res.svd$V <- res.svd$V[,1:ncp]
+       }
+	  moyeig <- (res.svd$sumvp-sum(res.svd$vs[1:ncp]^2))/min(ncol(zz)-ncol(Xquali)-ncp,(nrow(zz)-1-ncp))
       moyeig <- min(moyeig * coeff.ridge, res.svd$vs[ncp +1]^2)
       moyeigret<-moyeig
       if (method == "em"){
@@ -56,7 +58,7 @@ MIFAMD <- function(X, ncp = 2, method = c("Regularized","EM"), coeff.ridge = 1,
       }else if(ncp==1){
         eig.shrunk <- matrix((res.svd$vs[1:ncp]^2 - moyeig)/res.svd$vs[1:ncp],1,1)
       }
-      zzhat<-tcrossprod(res.svd$U%*%diag(eig.shrunk),res.svd$V[which(apply(is.finite(res.svd$V),1,any)),,drop=FALSE])
+      zzhat<-tcrossprod(t(t(res.svd$U)*eig.shrunk),res.svd$V[which(apply(is.finite(res.svd$V),1,any)),,drop=FALSE])
       zzhat<-sweep(zzhat,MARGIN = 2,FUN = "+",STATS = moy)
       return(list(zzhat=zzhat,moyeig=moyeigret,res.svd=res.svd,M=M))
     }

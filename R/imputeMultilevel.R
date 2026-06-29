@@ -145,7 +145,6 @@ QualiAct <- QuantiAct <- NULL
       Z <-  t(t(Xhat[, (nb.quanti+1):ncol(Xhat)])*sqrt(Mglobal) + Mglobal)
       Mglobal = apply(Z,2,mean) # nc/n
       Zcentered <- t(t(Z)-Mglobal)# Z - between  Z - nck/nk
-#      A = Zcentered%*%diag(1/sqrt(Mglobal)) # Zcentered* (nck)^{-1/2}
       A = t(t(Zcentered)/sqrt(Mglobal)) # Zcentererd* (nck)^{-1/2}
       Xhat[,(nb.quanti+1):ncol(Xhat)] <-A
     }
@@ -161,8 +160,14 @@ QualiAct <- QuantiAct <- NULL
       WITHIN_global = rbind(WITHIN_global,inter) 
     }
     
-    svd.WITHIN_global <- FactoMineR::svd.triplet(WITHIN_global,ncp=ncpW) # SVD of the Within part
-    moyeigG <- mean(svd.WITHIN_global$vs[-c(1:ncpW)]^2) # Check when n<p
+     if (ncp>=0.5*min(dim(Xhat))){
+	   svd.WITHIN_global <- FactoMineR::svd.triplet(WITHIN_global,ncp=ncpW)
+       moyeigG <- mean(svd.WITHIN_global$vs[-c(1:ncpW)]^2) # Check when n<p
+     } else{
+	   svd.WITHIN_global <- irlba.triplet(WITHIN_global,ncp=ncpW)
+       moyeigG <- (svd.WITHIN_global$sumvp-sum(svd.WITHIN_global$vs[1:ncpW]^2))/(min(ncol(WITHIN_global),nrow(WITHIN_global)-1)-ncpW)
+     }
+#    svd.WITHIN_global <- FactoMineR::svd.triplet(WITHIN_global,ncp=ncpW) # SVD of the Within part
     if (method=="em") moyeigG <- 0
     eig.shrunkG <- ((svd.WITHIN_global$vs[1:ncpW]^2 - moyeigG)/svd.WITHIN_global$vs[1:ncpW])
     

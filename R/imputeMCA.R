@@ -100,7 +100,7 @@ nbiter <- 0
 while (continue){
 
   nbiter <- nbiter+1
-  if (length(quali.sup) >0) tab.disj.comp[,TabDisjMod[TabDisjMod!="quanti.sup"]=="quali.sup"] <- tab.disj.comp[,TabDisjMod[TabDisjMod!="quanti.sup"]=="quali.sup"] * 1e-8
+  if (length(quali.sup) >0) tab.disj.comp[,TabDisjMod[TabDisjMod!="quanti.sup"]=="quali.sup"] <- tab.disj.comp[,TabDisjMod[TabDisjMod!="quanti.sup"]=="quali.sup"] * 1e-10
   M <- apply(tab.disj.comp, 2, moy.p,row.w)/ncol(don)
   if (any(M<0)) stop(paste("The algorithm fails to converge. Choose a number of components (ncp) less or equal than ",ncp-1," or a number of iterations (maxiter) less or equal than ",maxiter-1,sep=""))
 
@@ -108,13 +108,20 @@ while (continue){
   Z <- t(t(Z)-apply(Z,2,moy.p,row.w))
   Zscale <- t(t(Z)*sqrt(M))
 
-  svd.Zscale <- FactoMineR::svd.triplet(Zscale,row.w=row.w,ncp=ncp)
-  moyeig <- 0
   if (length(quanti.sup)+length(quali.sup)>0) NcolZscale <- sum(TabDisjMod=="var")
   else NcolZscale <- ncol(Zscale)
-#  if (nrow(don)>(NcolZscale-ncol(don))) moyeig <- mean(svd.Zscale$vs[-c(1:ncp,(NcolZscale-ncol(don)-length(quali.sup)- length(quanti.sup)+1):NcolZscale)]^2)
-  if (nrow(don)>(NcolZscale-ncol(don))) moyeig <- mean(svd.Zscale$vs[-c(1:ncp,(NcolZscale-(ncol(don)-length(quali.sup)-length(quanti.sup))+1):NcolZscale)]^2)
-  else moyeig <- mean(svd.Zscale$vs[-c(1:ncp,NcolZscale:length(svd.Zscale$vs))]^2)
+  moyeig <- 0
+  if (ncp>=0.5*min(dim(Zscale))){
+	svd.Zscale <- FactoMineR::svd.triplet(Zscale,row.w=row.w,ncp=ncp)
+#    if (nrow(don)>(NcolZscale-ncol(don))) moyeig <- mean(svd.Zscale$vs[-c(1:ncp,(NcolZscale-(ncol(don)-length(quali.sup)-length(quanti.sup))+1):NcolZscale)]^2)
+#    if (nrow(don)>(NcolZscale-ncol(don))) moyeig <- mean(svd.Zscale$vs[(ncp+1):(NcolZscale-(ncol(don)-length(quali.sup)-length(quanti.sup)))]^2)
+#    else moyeig <- mean(svd.Zscale$vs[-c(1:ncp,NcolZscale:length(svd.Zscale$vs))]^2)
+  } else{
+	svd.Zscale <- irlba.triplet(Zscale,row.w=row.w,ncp=ncp+1)
+  }
+
+  if (nrow(don)>(NcolZscale-ncol(don))) moyeig <- (svd.Zscale$sumvp - sum(svd.Zscale$vs[1:ncp]^2))/(NcolZscale-(ncol(don)-length(quali.sup)-length(quanti.sup))-ncp)
+  else moyeig <- (svd.Zscale$sumvp-sum(svd.Zscale$vs[1:ncp]^2))/(nrow(don)-1-ncp)
   moyeig <- min(moyeig*coeff.ridge,svd.Zscale$vs[ncp+1]^2)
   if (method=="em") moyeig <-0
   eig.shrunk <- ((svd.Zscale$vs[1:ncp]^2-moyeig)/svd.Zscale$vs[1:ncp])
@@ -130,8 +137,8 @@ while (continue){
   relch <- sum(diff^2*row.w)
   tab.disj.rec.old <- tab.disj.rec
   tab.disj.comp[hidden] <- tab.disj.rec[hidden]
-  if (length(quali.sup) >0) tab.disj.comp[,TabDisjMod[TabDisjMod!="quanti.sup"]=="quali.sup"] <- tab.disj.comp[,TabDisjMod[TabDisjMod!="quanti.sup"]=="quali.sup"] * 1e+08
-  continue=(relch > threshold)&(nbiter<maxiter)
+  if (length(quali.sup) >0) tab.disj.comp[,TabDisjMod[TabDisjMod!="quanti.sup"]=="quali.sup"] <- tab.disj.comp[,TabDisjMod[TabDisjMod!="quanti.sup"]=="quali.sup"] * 1e+10
+  continue <- (relch > threshold)&(nbiter<maxiter)
 }
 if (is.null(quanti.sup)){
     compObs <- find.category(don,tab.disj.comp)
